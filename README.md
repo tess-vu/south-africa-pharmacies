@@ -983,7 +983,7 @@ By Land Type
 [![Map](notebooks/images/archive//popdensity.png)](notebooks/images/archive//popdensity.png)
 
 #### Zooming into Johannesburg
-[![Map](notebooks/images/archive//gauteng_joburg_sidebyside_rect.png)](notebooks/images/archive//gauteng_joburg_sidebyside_rect.png)
+[![Map](notebooks/images/archive/gauteng_joburg_sidebyside_rect.png)](notebooks/images/archive/gauteng_joburg_sidebyside_rect.png)
 #### Growth Rate
 [![Map](notebooks/images/archive/growth_rate_map.png)](notebooks/images/archive/growth_rate_map.png)
 ### Accessibility Patterns
