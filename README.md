@@ -978,14 +978,14 @@ By Land Type
 
 ### Mapping the Estimates
 #### 2023 Count Estimates (SAL)
-[![Map](visuals/pop2023estimate.png)](notebooks/images/archive/pop2023estimate.png)
+[![Map](notebooks/images/archive/pop2023estimate.png)](notebooks/images/archive/pop2023estimate.png)
 #### 2023 Density Estimates (SAL)
-[![Map](visuals/popdensity.png)](notebooks/images/archive//popdensity.png)
+[![Map](notebooks/images/archive//popdensity.png)](notebooks/images/archive//popdensity.png)
 
 #### Zooming into Johannesburg
-[![Map](visuals/gauteng_joburg_sidebyside_rect.png)](notebooks/images/archive//gauteng_joburg_sidebyside_rect.png)
+[![Map](notebooks/images/archive//gauteng_joburg_sidebyside_rect.png)](notebooks/images/archive//gauteng_joburg_sidebyside_rect.png)
 #### Growth Rate
-[![Map](visuals/growth_rate_map.png)](notebooks/images/archive/growth_rate_map.png)
+[![Map](notebooks/images/archive/growth_rate_map.png)](notebooks/images/archive/growth_rate_map.png)
 ### Accessibility Patterns
 
 *\[Section to be populated with analysis results including:\]*
@@ -993,6 +993,7 @@ By Land Type
 
 -   *Distance to nearest pharmacy distributions*
 -   *Accessibility metric maps*
+
 -   *Comparison of accessibility measures (straight-line vs. network)*
 -   *Population-weighted accessibility summaries*
 -   *Identification of access deserts (low-accessibility clusters)*
