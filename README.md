@@ -984,6 +984,10 @@ By Land Type
 
 #### Zooming into Johannesburg
 [![Map](notebooks/images/archive/gauteng_joburg_sidebyside_rect.png)](notebooks/images/archive/gauteng_joburg_sidebyside_rect.png)
+
+[![Map](notebooks/images/ea_density_barchart.png)](notebooks/images/ea_density_barchart.png)
+
+
 #### Growth Rate
 [![Map](notebooks/images/archive/growth_rate_map.png)](notebooks/images/archive/growth_rate_map.png)
 
@@ -997,7 +1001,7 @@ Walking Score Distribution
 [![Map](notebooks/images/2sfca/A_i_johannesburg.png)](notebooks/images/2sfca/A_i_johannesburg.png)  
 [![Map](notebooks/images/2sfca/A_i_durban.png)](notebooks/images/2sfca/A_i_durban.png)  
 
-The following maps present accessibility as it relates to proximity vs. choice. The K=1 map shows the areas with access to at least 1 nearby pharmacy. The k=3 map shows how many of these areas have reasonable access to at least 3 pharmacies, reflecting accessibility based on pharmacy abundance and freedom of choice.   
+The following maps present accessibility as it relates to proximity vs. choice. The K=1 map shows the areas with reasonable access to at least 1 nearby pharmacy. The k=3 map shows how many of these areas have reasonable access to at least 3 pharmacies, reflecting accessibility based on pharmacy abundance and freedom of choice.   
 [![Map](notebooks/images/sal_pharmacy_distance/heatmap_gauteng_all_methods_k1.png)](notebooks/images/sal_pharmacy_distance/heatmap_gauteng_all_methods_k1.png)  
 [![Map](notebooks/images/sal_pharmacy_distance/heatmap_gauteng_all_methods_k3.png)](notebooks/images/sal_pharmacy_distance/heatmap_gauteng_all_methods_k3.png)  
 
@@ -1016,10 +1020,12 @@ Access Score Distribution by Province and Method
 This score distribution is telling us a few things about accessibility within these provinces. Drivers in Gauteng have the easiest time accessing a pharmacy, but in Kwa-Zulu Natal, pedestrians have better access.  This means that in Gauteng, if you can walk to a pharmacy, you can also likely drive there. But you cannot say the same thing for Kwa-Zulu Natal, at least not to the same extent as Gauteng. This suggests that KwaZulu Natal may not have as much reliable road infastructure, or areas within their suburbs have private neighborhoods with private road networks that are not captured by OSM. For both provinces, their maximum walk score are extreme outliers. This suggests that pedestrian access is hyper-concentrated and drops off very quickly as one travels away from that area. Additionally, we see that the average distance from the nearest pharmacy in KwaZulu Natal is ~16km. This is 6 kilometers farther than what is considered reasonable travel distance for healthcare services (10km), suggesting remoteness is limiting their access here. 
 
 ### Correlations with Apartheid Geography
+These two charts demonstrate the imbalance of access between neighborhood types and primary race. The suburbs maintain over 70% of all share of access in South Africa, yet they only have 30% of the total population living there (7-8 million). Townships sit at ~8% of total access share, yet they are home to the most amount of people and the densest (~10 million). Spatial positioning is extremely important to ones level of access to pharmacies in South Africa. 
 
+[![Map](notebooks/images/ea_barchart.png)](notebooks/images/ea_barchart.png)  
 
-[![Map](notebooks/images/settlement_pie.png)](notebooks/images/settlement_pie.png)
-[![Map](notebooks/images/race_pie.png)](notebooks/images/race_pie.png)
+Here, the imbalance diminishes slightly between racial majority. Still, areas that are primarily white have over half of all access share despite being only 10% of the population. This suggests that the closer you are to white people, spatially, the better your access is, regardless of your own racial identity. 
+[![Map](notebooks/images/race_barchart.png)](notebooks/images/race_barchart.png)
 
 
 ------------------------------------------------------------------------
