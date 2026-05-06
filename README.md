@@ -1013,17 +1013,14 @@ Access Score Distribution by Province and Method
 | KwaZulu-Natal   | Walk       | 0.0849               | 17.96         | 15.94            | 49.99           |
 | KwaZulu-Natal   | Drive      | 0.0698               | 3.76          | 15.82            | 49.99           |
 
-
--   *Identification of access deserts (low-accessibility clusters)*
+This score distribution is telling us a few things about accessibility within these provinces. Drivers in Gauteng have the easiest time accessing a pharmacy, but in Kwa-Zulu Natal, pedestrians have better access.  This means that in Gauteng, if you can walk to a pharmacy, you can also likely drive there. But you cannot say the same thing for Kwa-Zulu Natal, at least not to the same extent as Gauteng. This suggests that KwaZulu Natal may not have as much reliable road infastructure, or areas within their suburbs have private neighborhoods with private road networks that are not captured by OSM. For both provinces, their maximum walk score are extreme outliers. This suggests that pedestrian access is hyper-concentrated and drops off very quickly as one travels away from that area. Additionally, we see that the average distance from the nearest pharmacy in KwaZulu Natal is ~16km. This is 6 kilometers farther than what is considered reasonable travel distance for healthcare services (10km), suggesting remoteness is limiting their access here. 
 
 ### Correlations with Apartheid Geography
 
-*\[Section to be populated with analysis results including:\]*
 
--   *Accessibility differences by settlement type*
--   *Relationship between accessibility and demographic composition*
--   *Comparison of historically white vs. township areas*
--   *Informal settlement accessibility analysis*
+[![Map](notebooks/images/settlement_pie.png)](notebooks/images/settlement_pie.png)
+[![Map](notebooks/images/race_pie.png)](notebooks/images/race_pie.png)
+
 
 ------------------------------------------------------------------------
 
