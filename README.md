@@ -986,16 +986,34 @@ By Land Type
 [![Map](notebooks/images/archive/gauteng_joburg_sidebyside_rect.png)](notebooks/images/archive/gauteng_joburg_sidebyside_rect.png)
 #### Growth Rate
 [![Map](notebooks/images/archive/growth_rate_map.png)](notebooks/images/archive/growth_rate_map.png)
+
 ### Accessibility Patterns
 
-*\[Section to be populated with analysis results including:\]*
+The following visuals present the most pertinent accessibility patterns within Gauteng and Kwa-Zulu Natal as it relates to spatial context.      
+This bivariate map shows the relationship between walking accessibility, driving accessibility, and spatial patterning.    
+[![Map](notebooks/images/2sfca/bivariate_walk_drive.png)](notebooks/images/2sfca/bivariate_walk_drive.png)  
+
+Walking Score Distribution  
+[![Map](notebooks/images/2sfca/A_i_johannesburg.png)](notebooks/images/2sfca/A_i_johannesburg.png)  
+[![Map](notebooks/images/2sfca/A_i_durban.png)](notebooks/images/2sfca/A_i_durban.png)  
+
+The following maps present accessibility as it relates to proximity vs. choice. The K=1 map shows the areas with access to at least 1 nearby pharmacy. The k=3 map shows how many of these areas have reasonable access to at least 3 pharmacies, reflecting accessibility based on pharmacy abundance and freedom of choice.   
+[![Map](notebooks/images/sal_pharmacy_distance/heatmap_gauteng_all_methods_k1.png)](notebooks/images/sal_pharmacy_distance/heatmap_gauteng_all_methods_k1.png)  
+[![Map](notebooks/images/sal_pharmacy_distance/heatmap_gauteng_all_methods_k3.png)](notebooks/images/sal_pharmacy_distance/heatmap_gauteng_all_methods_k3.png)  
+
+[![Map](notebooks/images/sal_pharmacy_distance/heatmap_kwazulu_natal_all_methods_k1.png)](notebooks/images/sal_pharmacy_distance/heatmap_kwazulu_natal_all_methods_k1.png)  
+[![Map](notebooks/images/sal_pharmacy_distance/heatmap_kwazulu_natal_all_methods_k3.png)](notebooks/images/sal_pharmacy_distance/heatmap_kwazulu_natal_all_methods_k3.png)  
 
 
--   *Distance to nearest pharmacy distributions*
--   *Accessibility metric maps*
+Access Score Distribution by Province and Method
+| **Province**    | **Method** | **Avg Access Score** | **Max Score** | **Avg K1 (km)** | **Max K1 (km)** |
+|-----------------|------------|----------------------|---------------|------------------|------------------|
+| Gauteng         | Walk       | 0.1653               | 42.70         | 2.03             | 41.52           |
+| Gauteng         | Drive      | 0.1909               | 8.33          | 2.02             | 38.11           |
+| KwaZulu-Natal   | Walk       | 0.0849               | 17.96         | 15.94            | 49.99           |
+| KwaZulu-Natal   | Drive      | 0.0698               | 3.76          | 15.82            | 49.99           |
 
--   *Comparison of accessibility measures (straight-line vs. network)*
--   *Population-weighted accessibility summaries*
+
 -   *Identification of access deserts (low-accessibility clusters)*
 
 ### Correlations with Apartheid Geography
