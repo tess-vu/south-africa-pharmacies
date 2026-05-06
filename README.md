@@ -932,13 +932,7 @@ Age Group  | Population |
 85+        | █▉                                                    95,222       
 
 
-Race           | Population  | % of Total    
-Black/Afr| █████████████████████████████████████████████████████ 19,258,078  (79.5%)  
-White                | ████████▏                                             2,950,489  (12.2%)      
-Indian/As   | ███▍                                                  1,257,858   (5.2%)   
-Coloured          | █▋                                                      627,476   (2.6%)    
-Other                    | ▍                                                        130,534   (0.5%) 
-  
+[![Map](notebooks/images/archive/racechart.png)](notebooks/images/archive/racechart.png)
 
 
 #### Projection Summarization
@@ -1020,7 +1014,7 @@ Access Score Distribution by Province and Method
 This score distribution is telling us a few things about accessibility within these provinces. Drivers in Gauteng have the easiest time accessing a pharmacy, but in Kwa-Zulu Natal, pedestrians have better access.  This means that in Gauteng, if you can walk to a pharmacy, you can also likely drive there. But you cannot say the same thing for Kwa-Zulu Natal, at least not to the same extent as Gauteng. This suggests that KwaZulu Natal may not have as much reliable road infastructure, or areas within their suburbs have private neighborhoods with private road networks that are not captured by OSM. For both provinces, their maximum walk score are extreme outliers. This suggests that pedestrian access is hyper-concentrated and drops off very quickly as one travels away from that area. Additionally, we see that the average distance from the nearest pharmacy in KwaZulu Natal is ~16km. This is 6 kilometers farther than what is considered reasonable travel distance for healthcare services (10km), suggesting remoteness is limiting their access here. 
 
 ### Correlations with Apartheid Geography
-These two charts demonstrate the imbalance of access between neighborhood types and primary race. The suburbs maintain over 70% of all share of access in South Africa, yet they only have 30% of the total population living there (7-8 million). Townships sit at ~8% of total access share, yet they are home to the most amount of people and the densest (~10 million). Spatial positioning is extremely important to ones level of access to pharmacies in South Africa. 
+These two charts demonstrate the imbalance of access between neighborhood types and primary race. The suburbs maintain over 70% of all share of access, yet they only have 30% of the total population living there (7-8 million). Townships sit at ~8% of total access share, yet they are home to the most amount of people and the densest (~10 million). Spatial positioning is extremely important to ones level of access to pharmacies in South Africa. 
 
 [![Map](notebooks/images/ea_barchart.png)](notebooks/images/ea_barchart.png)  
 
