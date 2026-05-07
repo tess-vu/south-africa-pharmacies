@@ -901,8 +901,8 @@ Age Group  | Population |
 By Province
 | PR_NAME       |   sal2011_total |      sal2023_total |       avg_growth_rate |    absolute_growth |   pct_growth |
 |:--------------|----------------:|-------------------:|----------------------:|-------------------:|-------------:|
-| Gauteng       |      13490065.0 | 15099422           | -0.004                | 1609357             |     0.119299 |
-| KwaZulu-Natal |      11204840.0 | 12423906           | -0.004                | 1219066            |     0.108798 |
+| Gauteng       |      13490065.0 | 15099422           | -0.004                | 1609357             |     11.9% |
+| KwaZulu-Natal |      11204840.0 | 12423906           | -0.004                | 1219066            |     10.8% |
 
 
 By Land Type
@@ -968,7 +968,7 @@ These two charts demonstrate the imbalance of access between neighborhood types 
 
 [![Map](notebooks/images/ea_barchart.png)](notebooks/images/ea_barchart.png)  
 
-Here, the imbalance diminishes slightly between racial majority. Still, areas that are primarily white have over half of all access share despite being only 10% of the population. This suggests that the closer you are to white people, spatially, the better your access is, regardless of your own racial identity. 
+Here, the imbalance diminishes slightly between racial majority. Still, areas that are primarily white have over half of all access share despite being only 10% of the population. This suggests that the closer you are to white society, spatially, the better your access is, regardless of your own racial identity. 
 [![Map](notebooks/images/race_barchart.png)](notebooks/images/race_barchart.png)
 
 
