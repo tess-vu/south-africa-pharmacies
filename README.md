@@ -1213,22 +1213,28 @@ populated\]*
 *\[More to be entered\]*   
  Berenbrok L, Tang S, Gabriel N ... Access to community pharmacies: A nationwide
      geographic information systems cross-sectional analysis Journal of the
-     American Pharmacists Association, 2022; 62, 1816-1822.e2  
+     American Pharmacists Association, 2022; 62, 1816-1822.e2   
+
 Gebru, T., Morgenstern, J., Vecchione, B., Vaughan, J. W., Wallach, H.,
     Daumé III, H., & Crawford, K. (2021). Datasheets for datasets.
     *Communications of the ACM*, 64(12), 86-92.      
+
 Lawal, Shola. "South Africa: 30 years after apartheid, what has changed?" Al
      Jazeera, Al Jazeera Media Network, Apr. 2025, www.aljazeera.com/news/
      2024/4/27/south-africa-30-years-after-apartheid-what-has-changed.   
+
 McLaren, Z.M., Ardington, C. & Leibbrandt, M. Distance decay and persistent
      health care disparities in South Africa. BMC Health Serv Res 14, 541
      (2014). https://doi.org/10.1186/s12913-014-0541-1     
+
 Murphy, Michael, and Jennifer Rodis. "The growing crisis of pharmacy deserts."
      College of Pharmacy, Ohio State University, 28 Apr. 2025,
      pharmacy.osu.edu/news/growing-crisis-pharmacy-deserts.        
+
 Mutandiro, Kimberly. "A thriving black market for medicines has emerged in
      Joburg." GroundUp, Mar. 2025, groundup.org.za/article/
      a-thriving-black-market-for-medicine-has-emerged-in-joburg/.   
+     
 Sefala, R. (2024). *The Legacy of Spatial Apartheid Dataset* (Version
     V3) \[dataset\]. Harvard Dataverse. https://doi.org/10.7910/DVN/JRYYNM  
 
