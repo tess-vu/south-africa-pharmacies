@@ -128,6 +128,9 @@ application, and the data that was collected to illustrate the findings.
 
 ## Study Area
 
+[![Map](notebooks/images/locator_map.png)](notebooks/images/locator_map.png)
+
+
 ### Gauteng Province
 
 Gauteng, South Africa's smallest province by area but most populous
@@ -145,25 +148,6 @@ established as an administrative center, displays similar patterns of
 racial residential segregation. The East Rand industrial corridor
 connects these major centers while incorporating additional township
 complexes.
-
-**Metropolitan Municipalities in Gauteng:**
-
-*\[Potential geographic photos?\]*
-
-\- City of Johannesburg Metropolitan Municipality
-
-\- City of Tshwane Metropolitan Municipality
-
-\- City of Ekurhuleni Metropolitan Municipality
-
-**District Municipalities in Gauteng:**
-
-*\[Potential geographic photos?\]*
-
-\- Sedibeng District (Emfuleni, Midvaal, Lesedi Local Municipalities)
-
-\- West Rand District (Mogale City, Rand West City, Merafong City Local
-Municipalities)
 
 Gauteng's economic centrality creates complex healthcare access dynamics
 because while the province has relatively high pharmacy density overall,
@@ -188,34 +172,6 @@ communities in former KwaZulu homeland areas where they face healthcare
 access challenges that are distinct from urban townships, including
 greater distances to healthcare infrastructure and limited
 transportation options.
-
-**Metropolitan Municipality in KwaZulu-Natal:**
-
-*\[Potential geographic photos?\]*
-
-\- eThekwini Metropolitan Municipality
-
-**District Municipalities in KwaZulu-Natal:**
-
-*\[Potential geographic photos?\]*
-
-\- Amajuba District - Harry Gwala District
-
-\- iLembe District
-
-\- King Cetshwayo District
-
-\- Ugu District
-
-\- uMgungundlovu District
-
-\- uMkhanyakude District
-
-\- uMzinyathi District
-
-\- uThukela District
-
-\- Zululand District
 
 The contrast between Gauteng and KwaZulu-Natal provides methodological
 advantages for this research. By developing approaches that work across
@@ -255,22 +211,16 @@ decade-old data.
 
 ### Spatial Accessibility in Healthcare Research
 
-Clinicials and researchers have been measuring healthcare access for decades. Typically, researchers find that rural, low-income areas are the most vulnerable to being under-served in access to healthcare. This is because remoteness is working against them. Most research indicates a 20-30 minute commute for healthcare is considered reasonable, which is hard to acheive in rural areas. In countries where the cost of healthcare is increasing, this gap of access continues to increase, and is exaserbated by spatial context (Murphy, OSU). Healthcare accessibility is oftem simplified to 'living near health services', but this is been proven over time to be insufficient, especially when using Euclidean distance. Variables like supply and infastructure are overlooked in this method (Distance Decya McLAren). Overtime, researchers have developed a method called Enhanced Two-Step Floating Catchment Area method. This is a gravity-based model that measures acces through time-traveled, supply capacity, and the role of demand. This will be explored in the methodology. Accessibility to pharmacies is crucial for public health: it promotes medication adhernece, increases health education/awareness, and normalizes vaccination and testing behaviors (acces to community pharmacies Berenbrok). 
-### The Modifiable Areal Unit Problem
+Clinicials and researchers have been measuring healthcare access for decades. Typically, researchers find that rural, low-income areas are the most vulnerable to being under-served in access to healthcare. This is because remoteness is working against them. Most research indicates a 20-30 minute commute for healthcare is considered reasonable, which is hard to acheive in rural areas. In countries where the cost of healthcare is increasing, this gap of access continues to increase, and is exaserbated by spatial context (Murphy and Rodis 2025). Healthcare accessibility is oftem simplified to 'living near health services', but this is been proven over time to be insufficient, especially when using Euclidean distance. Variables like supply and infastructure are overlooked in this method (McClaren et al. 2014). Overtime, researchers have developed a method called Enhanced Two-Step Floating Catchment Area method. This is a gravity-based model that measures acces through time-traveled, supply capacity, and the role of demand. This will be explored in the methodology. Accessibility to pharmacies is crucial for public health: it promotes medication adhernece, increases health education/awareness, and normalizes vaccination and testing behaviors (L Berenbrok 2022). 
 
-*\[To be filled\]*
-
-### Spatial Mismatch and Environmental Justice
-
-*\[To be filled\]*
 
 ### South African Spatial Research Context
 
-Apartheid is rightfully at the center of spatial research in South Africa and the motiviation behind this research. Although near 40 years in the past, inequalities still persist on many fronts. With the work of DAIR, they seek to understand how apartheid has evolved over time into the mainstream culture and society of South Africa today (Al jazeera). Because of the manufactured nature of apartheid, South Africa requires different classifications than just urban/subruban/rural that are often found around the world in some iteration. These concepts are present in SA, but are broken down into a more fine-grained subdivision based on their historical context that is not found anywhere else. Neighborhood types such as townships and informal residential have been introduced to this research using thousands of high resolution satellite imagery and integrated into detailed datasets by DAIR. They also collected spatial data on economic class (wealthy/non-wealthy), land use (industrial/commercial), and building density. DAIR plans to continue this research to understand the standard of living and demographic make-up of South Africa as time goes forward (open review raesetje). 
+Apartheid is rightfully at the center of spatial research in South Africa and the motiviation behind this research. Although near 40 years in the past, inequalities still persist on many fronts (Lowal 2025). With the work of DAIR, they seek to understand how apartheid has evolved over time into the mainstream culture and society of South Africa today. Because of the manufactured nature of apartheid, South Africa requires different classifications than just urban/subruban/rural that are often found around the world in some iteration. These concepts are present in SA, but are broken down into a more fine-grained subdivision based on their historical context that is not found anywhere else. Neighborhood types such as townships and informal residential have been introduced to this research using thousands of high resolution satellite imagery and integrated into detailed datasets by DAIR. They also collected spatial data on economic class (wealthy/non-wealthy), land use (industrial/commercial/residential), and building density. DAIR plans to continue this research to understand the standard of living and demographic make-up of South Africa as time goes forward (R Sefala 2024). 
 
-### Pharmacy Regulation in South Africa
+### Pharmacy Regulation and Trade in South Africa
 
-Pharmacies are regulated by the South African Pharmacy Council (SAPC), constituted of a 25-member collective of pharmaceutical professionals. SAPC is an independent, self-funded, statutory body mandated in terms of the Pharmacy Act, 53 of 1974 to regulate the pharmacy profession in the country with powers to register pharmacy professionals and pharmacies, control of pharmaceutical education, and ensuring good pharmacy practice. They maintain multiple committiees and allow you to search pharmacies or pharmacists that are recognized and approved by their regulations, including histories of inspections. (sapc website)
+Pharmacies are regulated by the South African Pharmacy Council (SAPC), constituted of a 25-member collective of pharmaceutical professionals. SAPC is an independent, self-funded, statutory body mandated in terms of the Pharmacy Act, 53 of 1974 to regulate the pharmacy profession in the country with powers to register pharmacy professionals and pharmacies, control of pharmaceutical education, and ensuring good pharmacy practice. They maintain multiple committiees and allow you to search pharmacies or pharmacists that are recognized and approved by their regulations, including histories of inspections (pharmcouncil.co.za). Due to the gaps in the regulated pharmaceutical market, an illicit drug trade has emerged. Those who cannot access or are denied access to regulated medicine turn to illegal vendors and street markets to access things like antibiotics, contraceptives, and pain relievers. The consequences of widespread unregulated medicine include increased drug abuse/misuse, increased risk of adverse advents, and decreased rates of dosage adherance (Mutandiro 2025). 
 
 ------------------------------------------------------------------------
 
@@ -1261,10 +1211,29 @@ populated\]*
 ## References
 
 *\[More to be entered\]*
-
+ Berenbrok L, Tang S, Gabriel N ... Access to community pharmacies: A nationwide
+     geographic information systems cross-sectional analysis Journal of the
+     American Pharmacists Association, 2022; 62, 1816-1822.e2 
 Gebru, T., Morgenstern, J., Vecchione, B., Vaughan, J. W., Wallach, H.,
-Daumé III, H., & Crawford, K. (2021). Datasheets for datasets.
-*Communications of the ACM*, 64(12), 86-92.
-
+    Daumé III, H., & Crawford, K. (2021). Datasheets for datasets.
+    *Communications of the ACM*, 64(12), 86-92.   
+Lawal, Shola. "South Africa: 30 years after apartheid, what has changed?" Al
+     Jazeera, Al Jazeera Media Network, Apr. 2025, www.aljazeera.com/news/
+     2024/4/27/south-africa-30-years-after-apartheid-what-has-changed.
+McLaren, Z.M., Ardington, C. & Leibbrandt, M. Distance decay and persistent
+     health care disparities in South Africa. BMC Health Serv Res 14, 541
+     (2014). https://doi.org/10.1186/s12913-014-0541-1  
+Murphy, Michael, and Jennifer Rodis. "The growing crisis of pharmacy deserts."
+     College of Pharmacy, Ohio State University, 28 Apr. 2025,
+     pharmacy.osu.edu/news/growing-crisis-pharmacy-deserts.    
+Mutandiro, Kimberly. "A thriving black market for medicines has emerged in
+     Joburg." GroundUp, Mar. 2025, groundup.org.za/article/
+     a-thriving-black-market-for-medicine-has-emerged-in-joburg/.
 Sefala, R. (2024). *The Legacy of Spatial Apartheid Dataset* (Version
-V3) \[dataset\]. Harvard Dataverse. https://doi.org/10.7910/DVN/JRYYNM
+    V3) \[dataset\]. Harvard Dataverse. https://doi.org/10.7910/DVN/JRYYNM  
+
+ 
+
+ 
+
+https://www.pharmcouncil.co.za/
