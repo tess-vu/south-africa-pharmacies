@@ -614,9 +614,6 @@ This SAL is a pocket of land roughly the size of one small to mid-size apartment
 If the 2023 SAL estimates were properly dissolved into SAL zones, the difference between the 2023 Census ward counts and our SAL estimates should be extremely minimal; as demonstrated below. Our output for this equation is 0. 
 <p align="center"> 2023 Ward Population Sum- 2023 SAL Estimate Sum </p>  
 
-Building data is used to further justify that our estimates accurately place population and measure true density.
-[text]
-
 
 ### Geocoding and Coordinate Assignment \[JOEY\]
 
