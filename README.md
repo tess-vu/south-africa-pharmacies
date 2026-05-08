@@ -1204,7 +1204,110 @@ populated\]*
 
 ### JavaScript Application \[ALEX\]
 
-*\[To be populated with web application code\]*
+This application examines disparities in pharmacy access shaped by South Africa's apartheid-era spatial geography. It combines a scroll-driven narrative (Story page) with an interactive map dashboard (Map page) to communicate access gaps across different settlement types primarily in Gauteng and KwaZulu-Natal provinces.
+
+The two main views:
+
+Story page (/): Linear scrollytelling narrative that flies the map through spatial context, apartheid geography, township deep dives (Olievenhoutbosch and KwaMashu), and province-level comparisons.
+Map page (/map): Interactive dashboard where users toggle access layers, context overlays, and province views independently.
+
+## How Story Sections Interact with Map Layers
+
+Each scrollable story section (`N2`, `N4`, `N5Parallel`) initializes its own Mapbox map instance and uses **Scrollama** to react to scroll position.
+
+**General pattern**
+
+```jsx
+// Inside a story section component (simplified)
+const scroller = scrollama()
+scroller
+  .setup({ step: '.section .step-card', offset: 0.8, progress: true })
+  .onStepEnter(({ index }) => {
+    map.current.flyTo({ center, zoom, duration: 3500 })
+    // Show or hide layers based on which step is active
+    map.current.setLayoutProperty('layer-name', 'visibility', 'visible')
+  })
+  .onStepProgress(({ index, progress }) => {
+    // Trigger chart or overlay at a scroll threshold
+    if (progress > 0.75) setShowChart(true)
+  })
+```
+
+The map container is sticky (`position: sticky`) while step cards scroll past it. Scrollama fires `onStepEnter` when a `.step-card` element crosses the configured offset (80% down the viewport).
+
+#### Section summary
+
+| Component | What it shows | Map behavior | Visualization |
+|---|---|---|---|
+| `N2` | Spatial context: EA types and population density by province | Flies between Gauteng and KZN; toggles EA-type and population layers | D3 stacked bar: racial composition by settlement type |
+| `N3` | Apartheid geography context | No map — CSS fade-in triggered by IntersectionObserver | None |
+| `N4` | Township deep dive | Side-by-side Olievenhoutbosch (Gauteng) and KwaMashu (KZN) maps; layers toggle per step | D3 stacked bar: comparison between townships |
+| `N5Parallel` | Province-level access comparison | Parallel maps with ward boundaries and pharmacy dots | Visual comparison only |
+
+#### StepCard
+
+`StepCard.jsx` is the reusable scroll target element. Scrollama watches `.step-card` elements and fires events as they cross the scroll offset threshold. Each section creates an array of step configs (with `fly` coordinates and which layers to toggle) and maps them to `<StepCard>` instances.
+
+
+#### Map Layer Reference
+
+All layers are defined and added in `src/pages/MapPage.jsx`. Paint and filter expressions live in `src/constants/Layerexpressions.js`. Colors and legend metadata are in `src/constants/mapStyles.js`.
+
+**Layer stack (bottom to top)**
+
+| Layer ID | Type | Data source | Purpose |
+|---|---|---|---|
+| `sa` | fill | vector tileset | Neutral base fill for all SAL polygons |
+| `walk-typology` | fill | vector tileset | 6-category access typology choropleth |
+| `walk-dist-k1` | fill | vector tileset | Continuous ramp: distance to nearest pharmacy |
+| `walk-dist-k3` | fill | vector tileset | Continuous ramp: distance to 3rd nearest (fragility indicator) |
+| `drive-typology` | fill | vector tileset | Drive-mode access typology |
+| `ea-type` | fill | vector tileset | Settlement type overlay |
+| `pct-black-african` | fill | vector tileset | Racial composition ramp |
+| `econ-status` | fill | vector tileset | Economic classification overlay |
+| `pop-density` | fill | vector tileset | Population density ramp |
+| `exceeds-walk-3km` | fill | vector tileset | Binary: >3km walk to nearest pharmacy |
+| `transport-gap` | fill | vector tileset | Bivariate: walk desert + drive served |
+| `walk-snap-flag` | fill | vector tileset | Orange wash for uncertain pharmacy snaps (>500m) |
+| `sal-outline` | line | vector tileset | SAL polygon outlines |
+| `pharmacy-dots` | circle | GeoJSON | Pharmacy point locations (clickable) |
+
+#### Layer groups and toggle behavior
+
+**Access layers** — radio group, one visible at a time:
+`walk-typology`, `walk-dist-k1`, `walk-dist-k3`, `drive-typology`
+
+**Overlays** — stack freely on top of whichever access layer is active:
+`pharmacy-dots`, `exceeds-walk-3km`, `transport-gap`, `walk-snap-flag`
+
+**Context layers** — toggle individually:
+`ea-type`, `pct-black-african`, `econ-status`, `pop-density`
+
+`MapSidebar.jsx` manages toggle state and calls `map.setLayoutProperty(layerId, 'visibility', value)`.
+
+#### Adding a new story chapter
+
+1. **Create the component** `src/components/N6.jsx` (and `n6.css`). Model on `N2.jsx` for scroll-triggered behavior or `N3.jsx` for a static section.
+
+2. **Initialize a Mapbox map** inside a `useEffect` with `mapboxgl.Map({ container, style, center, zoom })`. Use `useRef` to hold the map instance so it persists across renders.
+
+3. **Set up Scrollama** to watch `.step-card` elements inside your section and call `map.flyTo` and `setLayoutProperty` in the handlers.
+
+4. **Register steps** as an array of config objects (center, zoom, which layers to show/hide) and map each to a `<StepCard>`.
+
+5. **Add to `StoryPage.jsx`**:
+   ```jsx
+   import N6 from '../components/N6'
+   // Insert at the appropriate position in the render tree
+   <N6 />
+   ```
+
+6. **Add a nav anchor** in `NavBar.jsx` if the section needs direct linking.
+
+**More:**
+
+The web application is available at [astauf03.github.io/dair-pharmacy-app](url). 
+Source code: [github.com/astauf03/dair-pharmacy-app](https://github.com/astauf03/dair-pharmacy-app)
 
 ------------------------------------------------------------------------
 
