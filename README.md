@@ -1213,11 +1213,19 @@ populated\]*
 *\[More to be entered\]*   
  Berenbrok L, Tang S, Gabriel N ... Access to community pharmacies: A nationwide
      geographic information systems cross-sectional analysis Journal of the
-     American Pharmacists Association, 2022; 62, 1816-1822.e2   
+     American Pharmacists Association, 2022; 62, 1816-1822.e2 
+
+Gray, A., Riddin, J., & Jugathpal, J. (2016). Health care and pharmacy practice
+     in south africa. The Canadian Journal of Hospital Pharmacy, 69(1).
+     https://doi.org/10.4212/cjhp.v69i1.1521
 
 Gebru, T., Morgenstern, J., Vecchione, B., Vaughan, J. W., Wallach, H.,
     Daumé III, H., & Crawford, K. (2021). Datasheets for datasets.
-    *Communications of the ACM*, 64(12), 86-92.      
+    *Communications of the ACM*, 64(12), 86-92.
+
+Johnson-Castle, P. (2014, December 19). The Group Areas Act of 1950. South
+     African History Online. https://sahistory.org.za/article/
+     group-areas-act-1950
 
 Lawal, Shola. "South Africa: 30 years after apartheid, what has changed?" Al
      Jazeera, Al Jazeera Media Network, Apr. 2025, www.aljazeera.com/news/
@@ -1236,7 +1244,25 @@ Mutandiro, Kimberly. "A thriving black market for medicines has emerged in
      a-thriving-black-market-for-medicine-has-emerged-in-joburg/.   
      
 Sefala, R. (2024). *The Legacy of Spatial Apartheid Dataset* (Version
-    V3) \[dataset\]. Harvard Dataverse. https://doi.org/10.7910/DVN/JRYYNM  
+    V3) \[dataset\]. Harvard Dataverse. https://doi.org/10.7910/DVN/JRYYNM
+
+South African Government. (2011). Sustainable Human Settlements - Breaking new
+     ground. South African Government. https://www.gov.za/about-government/
+     sustainable-human-settlements-breaking-new-ground
+
+South African Health Products Regulatory Authority. (2026, April). Active Pharma
+     Licenced Establishments. South African Health Products Regulatory
+     Authority. https://www.sahpra.org.za/approved-licences/
+
+South African History Online. (2014, January 31). KwaMashu. 
+     South African History Online. https://sahistory.org.za/place/kwamashu
+
+South African Pharmacy Council. (2026, April). Pharmacists By Province.
+     Statistics. https://interns.pharma.mm3.co.za/Statistics/
+     PersonsByPharmacistRoleProvince?class=btn%20btn-primary
+
+Ulwazi Programme. (n.d.). History of KwaMashu. Ulwazi Sharing Indigenous
+     Knowledge. https://www.ulwaziprogramme.org/history-of-kwamashu/
 
  
 
