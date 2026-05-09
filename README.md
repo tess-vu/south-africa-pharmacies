@@ -426,15 +426,19 @@ MUSA_DAIR_DB
 │   ├── PHARMACIES_VITALITY_WELLNESS
 │   ├── PHARMACIES_HOSPITALS
 │   ├── SAL_POLYGON_2011
-│   └── WARDS_POLYGON_2023
-│
+│   ├── WARDS_POLYGON_2023
+│   └── RAW_PHARMACIES_GEOJSON
 ├── INTERMEDIATE (cleaned and joined data)
 │   ├── PHARMACIES_COMBINED
 │   ├── CITY_PROVINCE_LOOKUP
 │   └── WARD_JOINED_SAL (to be created)
-│
 └── MART (final production tables for Mapbox GL)
-    └── [final cleaned datasets for web application]
+    ├── PHARMACIES_MASTER_FINAL_GEOJSON
+    ├── CITY_PROVINCE_LOOKUP
+    ├── PHARMACIES_MASTER_FINAL
+    ├── KZN_BOUNDARIES
+    ├── GAUTENG_BOUNDARIES
+    └── ALL_ACCESS_GEOJSON
 ```
 
 **RAW Schema:** Contains source data in its original structure with
