@@ -301,6 +301,50 @@ DAIR Institute provides coordinates for these public pharmacy access
 points, though not detailed address information—private pharmacies, on
 the other hand, lack coordinates, but have detailed address information.
 
+**SAPC Registry (Scraped):**
+
+| Dataset | Source | Date | Records |
+|---|---|---|---|
+| SAPC Active Pharmacies — Gauteng | South African Pharmacy Council Registry | February 2026 | 1,961 (TBC) |
+| SAPC Active Pharmacies — KwaZulu-Natal | South African Pharmacy Council Registry | February 2026 | 894 (TBC) |
+
+The South African Pharmacy Council maintains a searchable online registry of all
+registered pharmacies and pharmacists at `interns.pharma.mm3.co.za`. Unlike the
+insurance network lists, which only include pharmacies participating in specific
+provider agreements, the SAPC registry represents the full population of legally
+registered pharmacies in South Africa. This provides an independent source for
+validating and supplementing the insurance-derived list.
+
+Because the registry does not offer bulk export, records were collected
+programmatically using a trie-based web scraper. The scraper submitted POST
+requests to the registry search endpoint for every possible 3-character
+alphabetical prefix within each province, paginating through results and
+expanding prefixes whenever a search returned a capped number of results without
+pagination, a pattern indicating server-side truncation. For each Active
+pharmacy returned in the search results table, the scraper immediately fetched
+the corresponding detail page within the same session to retrieve full address
+data. Inactive and Erased records do not return valid detail pages and were
+retained with table-level data only.
+
+The scrape yielded records containing Y-number (the SAPC unique pharmacy
+identifier), pharmacy name, street address, city, province, telephone, owner
+name, responsible pharmacist, licence number, registration date, and inspection
+history. The full scrape across both provinces required approximately 1–2 hours.
+The process is implemented in `01_sapc_scraper.ipynb` and is resumable from a
+checkpoint if interrupted.
+
+*SAPC Source Limitations:* The registry reflects registration status at the time
+of query, so pharmacies registered when the insurance network data was collected
+may have subsequently been deregistered, or vice versa. Detail pages are only
+accessible within the same browser session that executed the search, meaning the
+scraper must fetch detail pages immediately during the search loop rather than
+in a separate pass. Pharmacies with Inactive or Erased status are retained in
+the raw output with table-level data only and are excluded during the master
+file build. Additionally, the registry search has a minimum of 3-character
+prefix enforcement, meaning pharmacies with very short names may require
+multiple prefix expansions to be captured.
+
+
 **Data Extraction Methods:**
 
 -   **PDF Conversion:** GEMS, Wooltru, and Vitality pharmacy lists were
@@ -310,18 +354,36 @@ the other hand, lack coordinates, but have detailed address information.
     the provider website where it was already displayed in table format.
 -   **CSV Download:** SAMWUMED provided direct CSV download
     functionality from their website.
+-   **Web Scrape:** SAPC records were accessed via a python scrpaer which queried
+    a search function hosted on their website.  
 
 #### Final Transformed Data
 
 | Dataset | Description | Records |
 |------------------------|------------------------|------------------------|
 | `PHARMACIES_COMBINED` | Unified pharmacy database for Gauteng and KwaZulu-Natal after cleaning, standardization, and province filtering | 5,436 |
+| `geocoded_with_sapc.csv` | Full geocoded pharmacy list with SAPC regulatory fields appended where a confident fuzzy match was found | ~5,400 |
+| `sapc_needs_geocoding.csv` | SAPC records with no confident match to the geocoded list, routed to a standalone geocoding pass | ~1,200 |
+| `PHARMACIES_MASTER_FINAL.csv` | Authoritative master pharmacy file combining SAPC-registered and Places-only records after spatial validation, deduplication, and column consolidation. This is the input to all accessibility analysis. | 2,152 |
 
 The reduction from 9,114 raw private pharmacy records plus 272 hospital
 records (9,386 total) to 5,436 combined records reflects the removal of
 pharmacies outside Gauteng and KwaZulu-Natal provinces, deduplication of
 pharmacies appearing across multiple insurance networks, and removal of
 records with insufficient address information for geocoding.
+
+The `PHARMACIES_MASTER_FINAL.csv` file is the primary output of the Python
+geocoding pipeline and represents a different dataset from
+`PHARMACIES_COMBINED`. Where `PHARMACIES_COMBINED` consolidates the insurance
+network sources, the master file layers the SAPC registry on top of the geocoded
+insurance list, adds coordinate data from the Places API and hospital shapefile,
+removes records that fail spatial validation, and resolves duplicate records
+through both identifier-based and coordinate-proximity deduplication. SAPC rows
+take priority over Places-only rows in any collision on `place_id`. The master
+file includes a `source` field (`sapc` or `places`) and a `spatial_check` field
+(`ok`, `no_coords`, `outside_province`, `outside_sa`) that allow users to filter
+to any confidence tier. A sequential `record_id` field (`PH00001` through
+`PHnnnnn`) provides a stable primary key for joining to accessibility outputs.
 
 **Data Source Limitations:**
 
@@ -351,6 +413,72 @@ records with insufficient address information for geocoding.
     status (<https://pharmcouncil.co.za/Pharmacies_Overview>)
 -   **Google Places API:** Provides geocoding services and place
     verification for pharmacy locations
+
+### Point-of-Interest Search for Illicit Pharmacy Indicators
+
+The insurance network and SAPC registry sources capture the formal, registered
+pharmaceutical sector. They do not capture unlicensed vendors, traditional
+medicine sellers, or informal dispensaries that may serve as de facto pharmacy
+substitutes for populations without access to registered services. To map this
+informal layer, a systematic point-of-interest search was conducted across both
+provinces using the Google Places Nearby Search API with a set of keywords
+associated with informal and potentially illicit pharmaceutical activity.
+
+**Coverage Strategy**
+
+Full geographic coverage is achieved through a grid-based search rather than
+address-driven queries. A regular grid of search points is generated at
+approximately 8km spacing (0.08 degrees) across the bounding box of each
+province, and points that fall outside the actual province boundary polygon are
+discarded. Each retained grid point is queried with a 5km search radius, and the
+overlapping circles ensure continuous coverage with no gaps. All grid points
+that fall inside the province boundary are queried for each keyword, producing
+complete and systematic spatial coverage independent of address quality.
+
+**Keywords**
+
+Six keywords are searched in sequence across both provinces: `pharmacy`, `muti
+shop`, `chemist`, `health shop`, `traditional medicine`, and `medicine shop`.
+The `pharmacy` keyword recovers formal establishments that may not appear in the
+insurance network lists, while `muti shop`, `traditional medicine`, and
+`medicine shop` target the traditional and informal medicine sector specifically
+identified in the literature as a source of unregulated pharmaceutical products.
+`Chemist` is an alternate common term for pharmacies in southern Africa that
+yields additional coverage of both formal and informal establishments.
+
+**Result Structure**
+
+Pagination is handled automatically: if a search at a given grid point returns a
+`next_page_token`, the subsequent pages are fetched with a mandatory 2-second
+delay (required by the Google API before the token activates). Each result
+captures `place_id`, name, vicinity address, coordinates, rating, user ratings
+total, business status, and Google-assigned place types.
+
+Places that appear under multiple keywords are not duplicated. All results
+across all keywords are accumulated in memory and then grouped by `place_id`,
+with the `keyword` field collapsed to a comma-separated list of all keywords
+under which that place was returned (for example, `chemist, pharmacy`). This
+keyword tag is analytically useful: a place tagged under both `pharmacy` and
+`muti shop` warrants a different interpretation than one tagged under `muti
+shop` alone.
+
+**Output**
+
+`poi_pharmacies_google.csv` — one row per unique `place_id` across both
+provinces and all keywords, with a combined keyword field. Province is assigned
+based on which province's grid generated the first match for that `place_id`.
+
+*POI Search Limitations:* The Nearby Search API returns at most 60 results per
+grid point (3 pages of 20), so densely packed areas may have establishments
+beyond that cap that are not captured. The 8km grid spacing with a 5km radius
+provides overlapping coverage that partially mitigates this, as the same
+establishment may be captured from an adjacent grid point, but in extremely
+dense commercial areas some establishments may still be missed. Keyword matching
+relies on how businesses have self-described or been described by Google users
+in their listing, so a pharmacy operating under a trade name that contains none
+of the six keywords will not appear. The `business_status` field from the API
+reflects current operational status and may have changed since the date of the
+pull.
 
 ### Data Processing Pipeline
 
@@ -617,48 +745,113 @@ If the 2023 SAL estimates were properly dissolved into SAL zones, the difference
 
 ### Geocoding and Coordinate Assignment \[JOEY\]
 
-Address strings require geocoding to assign geographic coordinates. The
-project uses a dual-geocoding strategy for cost-efficiency:
+Address strings assembled in `PHARMACIES_COMBINED` require geocoding to assign
+geographic coordinates. The project uses the Google Places Text Search API as
+its primary geocoding engine, submitting structured query strings for each
+pharmacy and extracting the `place_id`, matched name, matched address, and
+latitude/longitude from the top result.
 
--   **Google Places API:** *\[To be filled\]*
--   **\[Secondary Option\]:** *\[To be filled\]*
+**Query Construction**
 
-Geocoding workflow:
+Each record's query string is assembled by concatenating available address
+components in the order: pharmacy name, street address, city, province, and the
+fixed suffix "South Africa." This format was chosen because the Text Search API
+performs best when the query resembles a natural language search rather than a
+raw address string, and including the pharmacy name substantially improves match
+precision in cases where multiple businesses share a building or street number.
+Records missing one or more components are handled gracefully, with the
+available fields concatenated and the missing ones omitted.
 
-1.  Prepare address strings with standardized formatting
-2.  First-pass geocoding using \[secondary option\] for all records
-3.  Identify failed or low-confidence matches
-4.  Submit failed records to Google Places in controlled batches
-    (approximately 10-20 records per test)
-5.  Review geocoding confidence scores and match types from both sources
-6.  Manual review for persistent low-confidence matches
+**API Execution**
 
-Records that fail geocoding from both sources or receive low-confidence
-scores require manual review and potential address correction before
-re-geocoding.
+Queries are submitted to the `place/textsearch/json` endpoint with a
+`type=pharmacy` filter to bias results toward pharmaceutical establishments.
+Each run is checkpoint-resumable: completed query strings are tracked in a
+checkpoint CSV and skipped on subsequent runs, allowing the extraction to be
+interrupted and restarted without re-querying completed records or incurring
+redundant API costs. A 0.2-second sleep between requests respects API rate
+limits. Progress is saved every 100 records. Each result is flagged with a
+`needs_review` boolean if the API returned a non-OK status, returned no
+`place_id`, or returned null coordinates.
+
+**Hospital Coordinate Fill-In**
+
+Pharmacies located within public hospital campuses frequently fail the Places
+Text Search because the hospital's primary listing dominates the result. For
+these records a name-based match is attempted against the government hospital
+shapefile: pharmacy names and hospital names are both cleaned by lowercasing,
+removing punctuation, and stripping generic institutional terms (hospital,
+clinic, medical, centre), and a direct string match on the cleaned key transfers
+the hospital's coordinates to any pharmacy with an otherwise-null location. This
+fills a targeted subset of missing coordinates without requiring additional API
+calls.
+
+**SAPC Integration and Coordinate Transfer**
+
+Following geocoding of the insurance-network list, SAPC-registered pharmacies
+are fuzzy-matched to the geocoded records (described in detail under
+Registration Validation). A significant portion of SAPC records that failed to
+match are found to correspond to Places-only rows that were geocoded
+successfully: the same pharmacy exists in both datasets but under slightly
+different name spellings. In these cases the Places-derived coordinates are
+transferred to the SAPC row and the redundant Places row is removed, preserving
+the richer SAPC regulatory metadata while retaining the geocoded position.
+
+**Spatial Validation**
+
+All geocoded coordinates undergo a two-tier spatial check. The outer check flags
+any coordinate falling outside a South Africa bounding box (approximately 22°S
+to 35°S, 16°E to 33.5°E) as `outside_sa`. The inner check verifies that each
+coordinate falls within a buffered bounding box for its expected province:
+Gauteng (25.1°S–26.8°S, 27.4°E–29.2°E) and KwaZulu-Natal (26.7°S–31.2°S,
+28.7°E–33.0°E), each expanded by approximately 5 miles to avoid discarding
+genuine pharmacies near province boundaries. Records failing the inner check
+receive a `outside_province` flag. Records with null coordinates are flagged as
+`no_coords`. A 5-mile buffer was chosen as a balance between catching genuine
+boundary pharmacies and excluding clearly mismatched geocodes.
+
+**Re-Geocoding Passes**
+
+Records flagged as `outside_province`, `outside_sa`, or `no_coords` undergo up
+to two re-geocoding attempts. The first pass applies a simplified query using
+only name, city, and province — omitting the street address, which is the most
+frequent source of geocoding errors for South African addresses — and applies
+the spatial checks again to any returned result before accepting it. The second
+pass targets SAPC rows that emerged from the fuzzy match with no coordinates at
+all, using SAPC-specific field names. Both passes apply the spatial validation
+before updating the master record, ensuring that a re-geocoded result outside
+South Africa does not overwrite a previously null coordinate.
 
 **Geocoding Limitations:**
 
--   **\[Secondary Option\] Coverage:** \[Secondary Option\] data quality
-    varies by area, so informal settlements, newly developed areas, and
-    rural regions may have incomplete or inaccurate address data,
-    resulting in higher failure rates.
--   **Address Format Sensitivity:** South African addresses follow
-    varied conventions (street numbers before/after names, informal
-    locality descriptions, postal codes as location identifiers) and
-    geocoders trained on international formats may misinterpret these
-    patterns.
--   **Coordinate Precision:** Geocoding typically returns building or
-    street-level coordinates, so for pharmacies in shopping centers or
-    medical complexes, returned coordinates may be tens of meters from
-    actual pharmacy entrances.
--   **API Budget Constraints:** The \$200 Google API budget limits the
-    number of fallback geocoding requests, potentially leaving some
-    failed matches unresolved or forcing acceptance of lower-confidence
-    matches.
--   **Temporal Lag:** \[Secondary Option\] and Google databases may not
-    reflect recent address changes, new developments, or demolished
-    buildings, creating phantom locations or missing new pharmacies.
+- **Address Format Sensitivity:** South African addresses follow varied
+  conventions including informal locality descriptors, postal codes used as
+  location identifiers, and non-English place names. The Places Text Search
+  interprets these inconsistently, and the top result may match to the correct
+  suburb rather than the specific street address, resulting in centroid-level
+  rather than building-level precision.
+- **Same-Name Province Mismatch:** A common failure mode is a query returning a
+  pharmacy in the correct chain but in the wrong province — for example, a
+  Dis-Chem in Gauteng being returned for a KwaZulu-Natal query because the name
+  match is stronger than the geographic signal. Spatial validation catches these
+  cases, but the underlying record is left with null coordinates after
+  re-geocoding unless the simplified query resolves it.
+- **API Budget Constraints:** Google Places API billing limits the total number
+  of queries feasible within the project budget. The checkpoint system and
+  skip-on-resume pattern minimize redundant calls, but records that exhaust
+  re-geocoding attempts without a valid in-province result remain in the master
+  file with null coordinates and a `no_coords` spatial flag.
+- **Coordinate Precision:** The Text Search API returns a single representative
+  point per place, which for pharmacies in shopping centers or medical complexes
+  may represent the complex entrance rather than the pharmacy unit. This
+  introduces sub-block positional uncertainty that is generally acceptable for
+  ward-level accessibility analysis but would affect any fine-grained network
+  routing.
+- **Hospital Name Matching Sensitivity:** The hospital coordinate fill-in relies
+  on cleaned name string equality. Pharmacies with names that diverge
+  substantially from their hospital's official name — for example, a private
+  dispensary within a public hospital using a branded name — will not be
+  captured by this method.
 
 ### Spatial Accessibility Calculation
 
@@ -780,7 +973,71 @@ where township areas may display distinct environmental signatures.
 
 Data quality assurance proceeds throughout the pipeline:
 
-**Registration Validation:** *\[To be filled\]*
+**Registration Validation:**SAPC registration status is validated through a fuzzy matching process that
+links each SAPC-registered pharmacy to its corresponding record in the Google
+Places-derived geocoded list. This matching serves two purposes: confirming that
+a pharmacy appearing in the insurance network lists is also registered with the
+SAPC (supporting legitimacy), and enriching geocoded records with regulatory
+metadata including Y-number, owner, responsible pharmacist, licence number,
+registration date, and inspection history that the insurance sources do not
+contain.
+
+Matching is performed at the province level: each SAPC record is compared only
+against geocoded candidates in the same province to reduce false positive risk.
+This restriction is enforced through a province normalization step that maps all
+province field variants (including abbreviations such as KZN and name fragments
+such as "Natal") to a canonical lowercase form before grouping.
+
+The match score for each candidate pair is a weighted combination of name
+similarity and address similarity. Name similarity uses token sort ratio, which
+reorders tokens alphabetically before comparison to handle word-order variation
+(e.g. "Clicks Pharmacy Sandton" versus "Sandton Clicks"). Address similarity
+uses token set ratio, which identifies the common token subset and is more
+tolerant of partial address matches. These two scores are combined as:
+
+`combined_score = 0.6 × name_score + 0.4 × address_score`
+
+The 60/40 weighting reflects that name similarity is generally a stronger
+discriminator than address similarity for South African pharmacy records, where
+address formatting is inconsistent across sources. Both scores are computed on
+cleaned text with punctuation removed, all characters lowercased, and generic
+pharmacy-related terms stripped (pharmacy, pharm, chemist, apteek, dispensary,
+medical, clinic, and related variants) to prevent these ubiquitous words from
+inflating similarity scores between unrelated records.
+
+A chain guard short-circuits matching to a score of zero for records belonging
+to confirmed but different retail chains. A curated list of major pharmacy
+chains (Dis-Chem, Clicks, Medirite, Alpha Pharm, Mopani, and others) is checked
+against both records before scoring. If both records are identified as chain
+pharmacies but under different chain names, the pair cannot be a match
+regardless of name similarity, preventing cross-chain false positives that would
+otherwise achieve high scores on generic words like "pharmacy" and "store."
+
+Three confidence tiers are applied:
+
+| Tier | Score Range | Disposition |
+|---|---|---|
+| `auto_match` | ≥ 80 | SAPC regulatory fields appended to geocoded record automatically |
+| `review` | 70–79 | Record flagged for human inspection; treated as unmatched for master file build |
+| `no_match` | < 70 | SAPC record routed to separate geocoding pass (`04_sapc_geocode_unmatched.ipynb`) |
+
+The `match_type` field is preserved in all output files as an audit trail,
+allowing downstream users to filter to only automatically matched records or to
+inspect the borderline cases. The lowest-scoring auto-matches are surfaced in a
+preview table during the notebook run to support threshold calibration before
+export.
+
+*Registration Validation Limitations:* The fuzzy match is sensitive to threshold
+selection. The auto-match threshold of 80 was chosen conservatively to minimize
+false positives at the cost of routing more records to the re-geocoding pass.
+Lowering the threshold would increase SAPC coverage but risk linking unrelated
+pharmacies. The province-constraint assumption that a pharmacy will have
+consistent province assignment across both the SAPC registry and the insurance
+network sources may not hold for pharmacies near province boundaries or for
+records with missing province data that were inferred through the city lookup
+table. Matching is also performed on a single best candidate per SAPC record: if
+the correct geocoded match is not in the top-scoring position due to address
+formatting, the record is routed to geocoding rather than matched.
 
 **Spatial Validation:** Geocoded coordinates are verified against
 expected province boundaries where pharmacies geocoding outside Gauteng
@@ -1194,10 +1451,93 @@ Appends public hospital records from government sources:
 
 ### Python Scripts \[JILL, JOEY, TESS\]
 
-*\[To be filled\]*
+#### Pharmacy Geocoding and source enhancement
 
-*\[Additional geocoding, analysis, and visualization scripts to be
-populated\]*
+The Python geocoding and spatial analysis pipeline is implemented across six
+notebooks that execute sequentially. Each notebook is checkpoint-resumable and
+produces intermediate CSV outputs that serve as inputs to the following stage.
+
+**`01_sapc_scraper.ipynb`**
+
+Scrapes the SAPC pharmacy registry for Gauteng and KwaZulu-Natal. Implements a
+trie-based search strategy: every possible 3-character alphabetical prefix is
+submitted as a search query for each province, paginating through results and
+expanding any prefix that returns a capped result count without pagination (a
+signal of server-side truncation). For each Active pharmacy returned by a
+search, the detail page is fetched within the same session to retrieve full
+address data. Inactive and Erased pharmacies are retained with table-level data
+only, as their detail pages return server errors. Detail fetches are
+parallelized across 10 concurrent workers per search batch to reduce total
+runtime. The scraper checkpoints every 100 new records and resumes from the
+checkpoint if interrupted. Output: `sapc_raw.csv`.
+
+**`02_google_places_extract.ipynb`**
+
+Loads `PHARMACIES_COMBINED.csv`, deduplicates on `PRACTICE_NUM` using a
+group-level merge that retains the first occurrence where addresses are
+identical or share the same leading characters, and saves
+`PHARMACIES_FINAL_DEDUPED.csv`. Queries the Google Places Text Search API for
+each record using a structured query string of pharmacy name, address
+components, and the fixed suffix "South Africa." Results are checkpointed every
+100 records and the run skips query strings already present in any existing
+results file, allowing the full extraction to be resumed after interruption or
+split across multiple sessions. Following extraction, records with null
+coordinates are filled from the government hospital shapefile through a cleaned
+name match. Configuring `PILOT_N` to an integer limits the run to that many
+records for pipeline validation before committing to the full extraction.
+Output: `PHARMACIES_places_full_results.csv`.
+
+**`03_sapc_pharma_join.ipynb`**
+
+Fuzzy-matches SAPC-registered pharmacies from `sapc_raw.csv` to the geocoded
+list in `PHARMACIES_places_full_results.csv`. Matching is province-constrained
+and uses a weighted combination of token sort ratio (name) and token set ratio
+(address) with a chain guard that prevents cross-chain false positives. Records
+scoring at or above 80 are automatically matched and have SAPC regulatory fields
+appended. Records scoring between 70 and 79 are flagged for review. Records
+scoring below 70 are classified as unmatched and exported for geocoding.
+Outputs: `geocoded_with_sapc.csv` (full geocoded list with SAPC fields appended
+where matched) and `sapc_needs_geocoding.csv` (unmatched SAPC records).
+
+**`04_sapc_geocode_unmatched.ipynb`**
+
+Geocodes SAPC pharmacies that received no confident match in the join step,
+using the same Google Places Text Search pattern as
+`02_google_places_extract.ipynb` but with query strings built from SAPC-specific
+field names (`sapc_name`, `sapc_address`, `sapc_city`, `sapc_province`). The
+output schema is intentionally aligned with `PHARMACIES_places_full_results.csv`
+so both files can be stacked for the master build. Checkpoint-resumable.
+Successfully geocoded records are appended to `geocoded_with_sapc.csv` to
+produce `geocoded_with_sapc_complete.csv`. Output: `SAPC_places_results.csv`.
+
+**`05_final_master_pharma.ipynb`**
+
+Builds the authoritative master pharmacy file from `sapc_raw.csv`,
+`SAPC_places_results.csv`, and `PHARMACIES_places_full_results.csv`. Steps are:
+(1) filter SAPC base to Active records and deduplicate on Y-number; (2) attach
+geocoordinates from the SAPC geocoding run; (3) clean and deduplicate the Places
+file; (4) stack SAPC and Places records with SAPC rows taking priority in any
+`place_id` collision; (5) identify Places-only rows that correspond to SAPC
+records missing coordinates, transfer the coordinates, and remove the redundant
+Places row; (6) run spatial validation using province bounding boxes with a
+5-mile buffer and flag failures; (7) re-geocode records flagged as `no_coords`,
+`outside_province`, or `outside_sa`; (8) perform a final deduplication and
+remove records that cannot be spatially resolved; (9) consolidate column names
+across the two source schemas and assign sequential `record_id` values. Output:
+`PHARMACIES_MASTER_FINAL.csv`.
+
+**`places_poi_search.ipynb`**
+
+Conducts a systematic grid-based Nearby Search across Gauteng and KwaZulu-Natal
+for points of interest associated with informal or illicit pharmaceutical
+activity. Generates a grid of search points at approximately 8km spacing,
+retaining only points that fall inside the province boundary polygon, and
+queries each point with a 5km radius for six keywords: `pharmacy`, `muti shop`,
+`chemist`, `health shop`, `traditional medicine`, and `medicine shop`.
+Pagination is handled automatically via `next_page_token`. Results across all
+keywords are accumulated in memory and grouped by `place_id` at the end of the
+run, collapsing the keyword field to a comma-separated list for places appearing
+under multiple search terms. Output: `poi_pharmacies_google.csv`.
 
 ### JavaScript Application \[ALEX\]
 
