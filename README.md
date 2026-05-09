@@ -25,7 +25,7 @@ However, the public health system serves over 80% of the population,
 whereas private pharmacies serve about 20% (Mkhize N.I., 2026). The inefficiency of
 this system on the supply and demand of medicines has led to a number of
 social repercussions like lower than average vaccination rates and
-higher than average rates of communicable diseases \[CITE\]. This new
+higher than average rates of communicable diseases (Aweeka 2025). This new
 bill seeks to bridge the gap between private and public disparities by
 making public health insurance acceptable in private pharmacies where
 supply is at a surplus.
@@ -37,7 +37,7 @@ This legislation aims to address the profound inequalities in healthcare
 access that persist nearly three decades after the end of apartheid,
 creating a universal healthcare system that theoretically enables all
 South Africans to receive quality healthcare services regardless of
-their socioeconomic status (need citation).
+their socioeconomic status (Ramaphosa 2024).
 
 The passage of the NHI Act has prompted critical questions about
 implementation readiness, particularly regarding the spatial
@@ -256,18 +256,16 @@ corresponding PROVINCE, `LOCAL_MUNICIPALITY`, `DISTRICT_MUNICIPALITY`,
 multi-stage address matching process described in the data processing
 pipeline.
 
-**Environmental and Raster Data:**
+**Network Data:**
 
 | Dataset | Source | Resolution/Format | Description |
 |------------------|------------------|------------------|------------------|
-| Google Open Buildings | Google Research | Vector polygons | Machine-learning-detected building footprints for built environment analysis |
 | OSMnx Pedestrian Network | OpenStreetMap via OSMnx | Vector network (nodes/edges) | Walkable street network for pedestrian accessibility calculations |
+| OSMnx Drive Network | OpenStreetMap via OSMnx | Vector network (nodes/edges) | Road network for driving accessibility calculations |
 
--   Google Open Buildings data is filtered to the study area geographic
-    boundaries for building density and coverage calculations.
--   The OSMnx pedestrian network is extracted from OpenStreetMap for
-    both provinces, enabling network-based walking distance calculations
-    to pharmacies as specified by the client.
+-   The OSMnx pedestrian and drive networks are extracted from
+    OpenStreetMap for both provinces, enabling network-based distance
+    calculations to pharmacies as specified by the client.
 
 **Private Health Insurance Provider Networks:**
 
@@ -567,6 +565,18 @@ This approach estimates small-area population counts for 2023 (SAL-level) using 
 2011 SAL population data, 2023 ward-level projections, and spatial weighting.  
 Using the Step Down Projection Method: It leverages population growth patterns and land weights to distribute ward-level counts to finer spatial units.
 
+#### SAL Deduplication (Preprocessing)
+
+The ArcGIS Pro spatial join that assigned SAL polygons to 2020 ward boundaries
+produced multiple rows per SAL where join artifacts created identical copies. Of
+39,177 input features, 37,610 EA_CODEs appear once, 748 appear twice, and 22
+appear three or more times. Five diagnostic checks confirm all 770 duplicate
+groups carry identical ward assignment, area, geometry, and all attribute values.
+Deduplication via `drop_duplicates(subset="EA_CODE", keep="first")` produces
+38,380 unique SAL records with no analytical information lost. This deduplicated
+shapefile (`sal_w_ward_dedup.shp`, EPSG:32735) serves as the geometric
+foundation for all downstream notebooks.
+
 #### Data Preparation
 
 2011 SAL census shapefile (ea_sal_kzn_gp.shp)  
@@ -614,7 +624,7 @@ This is joined back to the SAL layer by EA_CODE --> Summarize Table --> AREA==Ma
 | 53810017    |      52606020|     5720   |province |     district    | 
 
 
-Limitations: SALs where the ward share is evenly split between one or more wards lose some spatial meaning when it gets paired with the highest share ward since it does not reflect where people actually livin inside the SAL/ward. This limitation is prerequisite to the building footprint analysis later in the report.    
+Limitations: SALs where the ward share is evenly split between one or more wards lose some spatial meaning when it gets paired with the highest share ward since it does not reflect where people actually live inside the SAL/ward.    
 
 #### Density Calculations for weighting
 
@@ -629,11 +639,20 @@ We estimate ward-level 2011 counts by grouping at ward-level and summing SAL pop
 <p align="center">share2011=  SAL 2011 Population / Ward 2011 Total</p> 
  
 
-Dasymetric mapping weights were implemented to produce SAL unit estimations for 2023: 
+An earlier iteration of the model implemented dasymetric mapping weights that
+combined population share with log-density:
 <p align="center"> Dasym weight= share2011 * density_log </p> 
 
    
-The log of density was used to calculate the weight for several reasons. The spatial data was extremely skewed, with some SALs being the size of one apartment building and some being entire farming communities. The log was used to capture *relative* density to avoid extreme over estimation. This choice is justified below.    
+The log of density was used to calculate the weight for several reasons. The spatial data was extremely skewed, with some SALs being the size of one apartment building and some being entire farming communities. The log was used to capture *relative* density to avoid extreme over estimation.
+
+**Final implementation:** In the cleaned pipeline (`tess_newpred_clean.ipynb`),
+the dasymetric weight is set equal to `share2011` alone, without log-density
+re-weighting. This change was made because both `share2011` and `log_density`
+derive from `sal2011_pop`, and combining them would double-count the 2011
+population signal. The ward share sums are validated to equal exactly 1.000000
+for every ward (pycnophylactic constraint), ensuring mass preservation.
+
 Before calculating the final estimate with the weight, it is grouped by ward then normalized by the sum of SAL weights. This is to capture SAL population *relative* to its own Ward (our coarsest unit for which we have real counts). It avoids unrealistic overestimating in urban pockets and undue undercounting in rural areas.    
 
 Finally, 2023 Ward population counts were used with the dasymetric weights to estimate 2023 SAL level population projections 
@@ -667,8 +686,13 @@ This SAL is a pocket of land roughly the size of one small to mid-size apartment
 If the 2023 SAL estimates were properly dissolved into SAL zones, the difference between the 2023 Census ward counts and our SAL estimates should be extremely minimal; as demonstrated below. Our output for this equation is 0. 
 <p align="center"> 2023 Ward Population Sum- 2023 SAL Estimate Sum </p>  
 
+Total estimated 2023 population across both provinces: 27,523,308. This exactly
+matches the sum of ward-level 2022 Census totals, confirming mass preservation.
+Mean SAL population: 717; median: 667; max: 13,852. There are 1,270 SALs with
+zero estimated population (SALs that were vacant with no dwellings in 2011).
 
-### Geocoding and Coordinate Assignment \[JOEY\]
+
+### Geocoding and Coordinate Assignment
 
 Address strings assembled in `PHARMACIES_COMBINED` require geocoding to assign
 geographic coordinates. The project uses the Google Places Text Search API as
@@ -781,74 +805,280 @@ South Africa does not overwrite a previously null coordinate.
 ### Spatial Accessibility Calculation
 
 Access metrics quantify the relationship between pharmacy locations and
-population distribution and the project implements multiple
-accessibility measures to allow for methodological comparison.
+population distribution. The project implements multiple accessibility
+measures to allow for methodological comparison and dual-metric
+diagnostics, where each metric serves as a check on the other's failure
+modes. All spatial computations use EPSG:32735 (UTM zone 35S, meters).
+Pharmacy coordinates originate in WGS84 (EPSG:4326) and are projected for
+distance calculations.
 
-**Straight-Line Distance:** The simplest approach calculates
-straight-line (Euclidean) distance from population centroids to the
-nearest pharmacy, providing a baseline measure, but may poorly represent
-actual travel distances, particularly in areas with transportation
-barriers.
+#### Distance Metrics
+
+**Straight-Line Distance (Euclidean):** The simplest approach calculates
+straight-line distance from population centroids to the nearest pharmacy
+using a scipy `cKDTree` built from projected pharmacy coordinates,
+providing a lower-bound baseline that ignores road networks entirely.
+
+**Network Distance (Walking):** Walking network distance provides
+accessibility measures relevant for populations without vehicle access.
+The OSMnx "pedestrian" network type provides calculation of actual
+walking routes from SAL centroids to pharmacy locations, accounting for
+street network topology rather than assuming straight-line travel. This
+form of accessibility is particularly relevant for understanding access
+barriers for lower-income populations.
 
 **Network Distance (Driving):** Network distance analysis calculates
 travel distance along the road network, which better represents actual
-travel requirements, but assumes private vehicle access that may not be
-available to all populations. Driving network data can be extracted via
-OSMnx using the "drive" network type.
+travel requirements but assumes private vehicle access. Driving network
+data is extracted via OSMnx using the "drive" network type. Drive graphs
+are converted to undirected for Dijkstra routing, which slightly
+underestimates true drive distances in areas with one-way constraints,
+primarily affecting dense urban cores.
 
-**Network Distance (Walking):** Walking network distance provides
-accessibility measures relevant for populations without vehicle access,
-and this form of accessibility is particularly relevant for
-understanding access barriers for lower-income populations. The OSMnx
-"pedestrian" network type provides calculation of actual walking routes
-from population centroids to pharmacy locations, accounting for the
-street network topology rather than assuming straight-line travel.
+#### Enhanced Two-Step Floating Catchment Area (E2SFCA)
 
-**Catchment Area Methods:** Two-step floating catchment area methods
-calculate accessibility as population-to-pharmacy ratios within defined
-catchment thresholds, providing a supply-demand perspective rather than
-purely distance-based measures.
+The project implements the Enhanced Two-Step Floating Catchment Area
+method with network-based routing and negative exponential distance decay,
+providing a supply-demand perspective that captures competition between
+pharmacies and populations rather than purely distance-based measures.
 
-**Accessibility Calculation Limitations:**
+**Distance decay function.** Negative exponential decay with β = 0.0003:
+
+```
+f(d) = exp(-0.0003 × d)
+```
+
+This produces weight 1.000 at 0 m, 0.741 at 1 km, 0.549 at 2 km, 0.407
+at 3 km, 0.223 at 5 km, and 0.050 at 10 km. The parameter was selected
+to produce meaningful distance discrimination within the catchment range.
+An earlier version used β = 0.0001, which produced almost no decay (37%
+weight at 10 km) and was replaced.
+
+**Step 1: Supply ratio (Rj).** For each pharmacy, single-source Dijkstra
+traversal outward on the road network up to the catchment cutoff
+identifies all reachable SAL centroids. The decay-weighted population of
+reachable centroids is summed, and the supply ratio is computed as:
+
+```
+Rj = 1000 / max(weighted_pop, MIN_WEIGHTED_POP)
+```
+
+where `MIN_WEIGHTED_POP = 50` prevents runaway ratios from pharmacies in
+sparsely populated catchments. The factor of 1000 is a scaling constant
+for readability. Without the population floor, a pharmacy with 3 people
+in its catchment produced Rj = 333, creating scores 5,000x the mean.
+
+**Step 2: Accessibility score ($A_{i}$).** For each SAL, single-source
+Dijkstra traversal outward on the road network sums the decay-weighted
+Rj values from all reachable pharmacies:
+
+```
+Ai = Σ (Rj × f(d_ij))
+```
+
+where the sum is over all pharmacies j reachable from SAL i within the
+catchment cutoff.
+
+**Province-specific catchment distances:**
+
+| Province | Walk cutoff | Drive cutoff | Rationale |
+|---|---|---|---|
+| Gauteng | 2 km | 5 km | Dense, urban |
+| KwaZulu-Natal | 3 km | 10 km | Sparse, mixed rural-urban; ~7x larger than Gauteng |
+
+The walk and drive networks for each province are run separately,
+producing four province-mode combinations.
+
+**Bug fixes applied during implementation:** (1) The original code used
+`.set_index("node")` to build the population lookup, silently dropping
+populations when multiple SALs snapped to the same road network node; the
+fix uses `.groupby("node").sum()` to aggregate all populations at shared
+nodes. (2) The MIN_WEIGHTED_POP = 50 floor was added to cap maximum Rj
+at 20, preventing extreme outlier scores.
+
+#### Snap Distance Analysis
+
+When a SAL centroid snaps to a distant network node, the Dijkstra routing
+starts from a displaced origin, introducing systematic measurement error
+into both the 2SFCA and k-nearest distance results. To quantify this
+effect, the Euclidean distance between each SAL centroid and its nearest
+network node is computed for all four province-mode combinations.
+
+| Province | Mode | Median (m) | Mean (m) | P95 (m) | Max (m) | Flagged >500m (%) |
+|---|---|---|---|---|---|---|
+| Gauteng | Walk | 57 | 83 | 223 | 25,702 | 232 (1.1%) |
+| Gauteng | Drive | 67 | 101 | 290 | 26,962 | 398 (1.9%) |
+| KZN | Walk | 83 | 226 | 985 | 9,951 | 2,149 (12.3%) |
+| KZN | Drive | 102 | 302 | 1,318 | 8,435 | 2,884 (16.5%) |
+
+Farm SALs in KZN have 59.9% flagged at the 500m threshold; Traditional
+SALs in KZN have 20.4%; Urban SALs in either province have less than 1%.
+This directly quantifies the differential quality of OpenStreetMap road
+network coverage across settlement types. SALs with snap distance
+exceeding 500m receive a binary flag in the final dataset, allowing
+downstream analysts to filter or weight results by data quality
+confidence.
+
+#### K-Nearest Pharmacy Distance
+
+The k-nearest distance metric captures absolute physical reachability
+rather than supply-demand competition. Distances from each SAL centroid to
+the 3 nearest pharmacies are computed using Euclidean, pedestrian network,
+and drive network methods.
+
+k=1 captures basic reachability (can the community reach any pharmacy);
+k=2 captures redundancy (is there a fallback if the nearest pharmacy
+closes); k=3 captures choice (does a functioning local market exist rather
+than a single dependency point).
+
+**Network routing:** Single-source Dijkstra from each pharmacy node
+individually, with a 50 km cutoff. For each SAL centroid (snapped to its
+nearest network node), the distances from all pharmacy sources are
+collected, sorted, and the 3 shortest are retained as k=1, k=2, k=3.
+
+**Circuity ratio:** The ratio of network distance to Euclidean distance
+for k=1 is computed as a diagnostic. Values of 1.2–1.5 are typical for
+urban grids; values exceeding 3.0 suggest network data gaps or physical
+barriers (rivers, highways, rail lines). Gauteng walk median circuity is
+~1.38, drive ~1.36, both consistent with international benchmarks.
+
+**NaN handling:** 4,931 SALs (12.8%) have NaN walk distance at k=1 (no
+path within 50 km on the walk network); 5,001 SALs (13.0%) have NaN drive
+distance at k=1. These SALs are either genuinely isolated or in areas
+with sparse OSM coverage. NaN distances are treated as exceeding all
+thresholds in downstream analysis.
+
+#### Distance Threshold Exceedance
+
+Binary policy thresholds answer: what proportion of SALs (and people)
+cannot reach their k-th nearest pharmacy within a given distance? This
+provides a policy-legible metric that avoids decay functions and
+provincial quantile comparisons.
+
+For each combination of k level (1, 2, 3), transport mode (walk, drive),
+and threshold distance, a binary flag indicates whether the SAL exceeds
+the threshold.
+
+**Thresholds applied:**
+
+| Mode | Thresholds (km) |
+|---|---|
+| Walk | 1, 2, 3, 5 |
+| Drive | 5, 10, 15, 20 |
+| Euclidean | 1, 3, 5, 10 |
+
+Exceedance rates are computed as both SAL-count proportions and
+population-weighted proportions (using `sal2023_est`). Cross-tabulations
+are produced by province, settlement type (EA_GTYPE), and economic status
+(econ_status).
+
+**Policy reference thresholds (k=1):**
+
+| Province | Mode | Threshold | % SALs Exceeding | % Population Exceeding |
+|---|---|---|---|---|
+| Gauteng | Walk | 3 km | 16.5% | 15.8% |
+| KZN | Walk | 3 km | 61.3% | 62.7% |
+| Gauteng | Drive | 10 km | 1.9% | 1.2% |
+| KZN | Drive | 10 km | 35.6% | 35.7% |
+
+#### Combined Access Table and Access Typology
+
+The three analytical streams (2SFCA scores, k-nearest distances, threshold
+flags) are merged into a single SAL-level dataset. EA_CODE alignment is
+verified across all source tables (38,380 intersection, 0 orphans).
+
+**Access typology suggestion:** A six-category classification combining k=1
+distance, k=3 redundancy, Ai score, and snap flag to produce a single
+policy-legible label per SAL:
+
+| Category | k=1 distance | k=3 / options | Ai score | Snap flag | Meaning |
+|---|---|---|---|---|---|
+| Well-served | < 3 km | Gap < 5 km | Above median (nonzero) | No | Pharmacy nearby, alternatives exist, not overwhelmed |
+| Overcrowded | < 3 km | Gap < 5 km | Bottom tercile (nonzero) or zero despite proximity | No | Pharmacy nearby with options, but demand outstrips supply |
+| Fragile | < 3 km | Gap ≥ 5 km or k=3 NaN | Any | No | One pharmacy nearby but no meaningful alternatives |
+| Underserved | 3–10 km | Any | Any | No | Requires transport to reach any pharmacy |
+| Pharmacy desert | ≥ 10 km or NaN | Any | Any | No | Effectively no access |
+| Data-uncertain | Any | Any | Any | Yes | High measurement uncertainty due to OSM gaps |
+
+The classification is evaluated top-to-bottom: the snap flag check for
+Data-uncertain is applied first to separate measurement artifacts from
+genuine access conditions. Among the remaining SALs, the k=1 distance
+determines the primary tier (nearby, reachable, or absent), then k=3
+redundancy and Ai score refine the diagnosis within the "nearby" tier.
+Tercile and median boundaries are computed from nonzero Ai values within
+each province-mode combination to prevent zero-inflation from distorting
+the classification. The typology is computed for both walk and drive modes.
+
+#### Accessibility Calculation Limitations
 
 -   **Straight-Line Distance:** Assumes unobstructed travel in all
     directions, fails to account for barriers such as highways, rivers,
     railway lines, or fenced properties that may substantially increase
-    actual travel distance. Also, urban areas with irregular street
-    grids may have network distances that are much larger than
-    straight-line distances.
+    actual travel distance. Urban areas with irregular street grids may
+    have network distances much larger than straight-line distances.
 -   **Network Distance (General):** Network quality depends on
     OpenStreetMap completeness, and informal roads, footpaths, and
     shortcuts common in township areas may be unmapped, overestimating
     travel distances for local residents.
 -   **Driving Distance:** Assumes vehicle availability and ignores
-    traffic congestion, parking availability, and fuel costs that affect
-    real-world driving accessibility, and also fails to account for
-    public transit options (minibus taxis) that may provide alternative
-    access patterns.
+    traffic congestion, parking availability, and fuel costs. Also fails
+    to account for public transit options (minibus taxis) that may provide
+    alternative access patterns. The dominant transport mode for the
+    populations most likely to face pharmacy access barriers (low-income,
+    non-vehicle-owning households in townships and traditional areas) is
+    the minibus taxi, which is captured by neither the walk nor drive
+    network.
 -   **Walking Distance:** Standard walking speed assumptions (5 km/h)
     may not hold for elderly, disabled, or mobility-impaired
     populations, and also does not account for safety concerns, terrain
-    difficulty, or weather conditions that may discourage walking in
-    certain areas.
--   **Catchment Area Methods:** Threshold selection (e.g. 1km, 2km
-    catchments) is inherently arbitrary, so different thresholds produce
-    different accessibility patterns, meaning that a binary
-    in/out-of-catchment assignment ignores that a pharmacy 1.01km away
-    provides nearly equivalent access to one 0.99km away.
+    difficulty, or weather conditions.
+-   **2SFCA Zero-Inflation:** Walking $A_{i}$ is exactly zero for 53.2% of
+    Gauteng SALs and 74.3% of KZN SALs. Not all zeros represent genuine
+    pharmacy deserts: many arise from centroid-to-node snap displacement
+    and catchment boundary edge effects. For Gauteng walk, 53.2% of SALs
+    have zero $A_{i}$ but only 24.6% exceed 3 km to the nearest pharmacy; the
+    28-point gap quantifies the artifact fraction. The k-nearest distance
+    metric serves as the diagnostic check on this failure mode.
+-   **Uniform Supply Assumption:** All pharmacies are treated as having
+    equal capacity (Sj = 1). A high-volume chain pharmacy with multiple
+    pharmacists is weighted identically to a single-pharmacist dispensary.
+    Pharmacy capacity data (staffing, dispensing volume, hours of
+    operation) are not available.
+-   **Province-Level Catchment Thresholds:** Catchment distances are set
+    by province rather than by settlement type, creating a discontinuity
+    at the province boundary: SALs on the KZN side receive larger
+    catchments than adjacent SALs in Gauteng's East Rand despite
+    comparable urbanization. A variable-catchment approach assigning
+    thresholds by EA_GTYPE (Urban, Traditional, Farms) is the documented
+    upgrade path.
+-   **Decay Parameter:** β = 0.0003 was selected for analytical
+    discrimination but is not empirically calibrated to South African
+    travel behavior. Calibration would require observed pharmacy
+    utilization data (patient origin-destination patterns).
+-   **Threshold Arbitrariness:** Policy thresholds (3 km walk, 10 km
+    drive) are reference points, not natural discontinuities. A SAL at
+    3.1 km is classified differently from one at 2.9 km despite
+    near-identical access. The multi-threshold approach (four thresholds
+    per mode at three k levels) mitigates this by showing the full
+    exceedance curve.
 -   **Population Centroid Assumption:** All methods calculate distance
-    from areal unit centroids, assuming populations are concentrated at
-    geometric centers, so for irregularly shaped wards or SALs,
-    substantial portions of the population may be far from the centroid,
-    experiencing different accessibility than the centroid-based measure
-    suggests.
-
+    from geometric (unweighted) SAL centroids. For compact urban SALs,
+    this closely approximates the population center. For large, irregular
+    rural SALs (some exceeding 600 km² in KZN), the geometric centroid
+    may fall in uninhabited terrain, introducing systematic measurement
+    error that propagates through the entire pipeline.
+-   **Province Boundary Truncation:** Road networks are downloaded by
+    province and terminate at the provincial edge. SALs near province
+    boundaries have their networks artificially truncated, forcing
+    Dijkstra routing into within-province detours even if a pharmacy
+    across the border is closer. In a national-scale deployment, this
+    boundary effect disappears.
 
 ### Validation and Quality Assurance
 
 Data quality assurance proceeds throughout the pipeline:
 
-**Registration Validation:**SAPC registration status is validated through a fuzzy matching process that
+**Registration Validation:** SAPC registration status is validated through a fuzzy matching process that
 links each SAPC-registered pharmacy to its corresponding record in the Google
 Places-derived geocoded list. This matching serves two purposes: confirming that
 a pharmacy appearing in the insurance network lists is also registered with the
@@ -953,15 +1183,18 @@ analysis pipeline. Key limitations are summarized below:
 
 | Stage | Primary Limitation | Mitigation Strategy |
 |----|----|----|
-| Data Collection | Network participation bias, missing independent pharmacies | Cross-validation with Google Places API |
+| Data Collection | Network participation bias, missing independent pharmacies | Cross-validation with Google Places API and SAPC registry |
 | PDF Extraction | OCR errors in addresses | Manual review of geocoding failures, iterative address cleaning |
 | Province Inference | Lookup table incompleteness | Iterative refinement based on dropped record review |
 | Deduplication | Missing `PRACTICE_NUM` for \~1,500 records | Post-geocoding spatial deduplication, conservative retention |
-| Geocoding | Variable coverage, address format inconsistency | Dual-source geocoding, confidence score filtering |
-| Areal Weighting | Homogeneous distribution assumption | Sensitivity analysis, comparison with WorldPop estimates |
-| Step-Down Model | 11-year temporal gap, stationarity assumption | Multi-method comparison, flagging high-divergence areas |
-| Accessibility Calculation | Centroid assumption, threshold arbitrariness | Multiple metric calculation, distance decay functions |
-| Environmental Variables | Temporal mismatch, detection accuracy | Confidence filtering, seasonal composite imagery |
+| Geocoding | Variable coverage, address format inconsistency | Dual-source geocoding, confidence score filtering, re-geocoding passes |
+| Population Step-Down | Frozen 2011 distribution assumption; 1,270 SALs with zero population regardless of post-2011 development | Multi-method comparison, flagging high-divergence areas |
+| Centroid Placement | Geometric centroids in large rural SALs may fall in uninhabited terrain | Documented upgrade path: building-footprint-weighted centroids for SALs above 75th percentile in area |
+| Network Coverage | OSM completeness varies by settlement type; province boundary truncation forces within-province detours | Snap distance diagnostic flags; national-scale deployment eliminates boundary effects |
+| Transport Mode | No minibus taxi mode; walk overestimates difficulty, drive overestimates ease for target population | True access picture lies between walk and drive metrics; transit integration via GTFS is the upgrade path |
+| 2SFCA Methodology | Province-level catchment thresholds create boundary discontinuity; uniform pharmacy capacity; uncalibrated decay parameter | Variable-catchment by EA_GTYPE (code exists, commented out); MIN_WEIGHTED_POP = 50 floor applied |
+| Pharmacy Data Coverage | Private-sector and government-employee sources only; clinic dispensaries and mobile units excluded | Conservative (pessimistic) view of access; actual medication access points likely higher |
+| Threshold Analysis | Binary cut at policy thresholds ignores near-threshold equivalence | Multi-threshold approach (four thresholds per mode at three k levels) shows full exceedance curve |
 
 Users of this analysis should interpret results as indicative rather
 than definitive, particularly in areas where multiple limitations may
@@ -971,11 +1204,9 @@ recommended for priority intervention areas.
 
 ------------------------------------------------------------------------
 
-## Exploratory Data Analysis 
+## Exploratory Data Analysis
 
 ### Pharmacy Distribution
-
-*\[Section to be populated with analysis results including:\]*
 
 | Province         | Count |
 |:-----------------|------:|
@@ -1000,8 +1231,7 @@ Pharmacy Distribution
 | Cornerstone Pharmacies  |     5 |
 | Magoveni Health Group   |     4 |
 | Thakeng Group           |     3 |
-| **Total**               | **2,152** |  
-
+| **Total**               | **2,152** |
 
 ### Population Characteristics 
 
@@ -1107,6 +1337,29 @@ Access Score Distribution by Province and Method
 
 This score distribution is telling us a few things about accessibility within these provinces. Drivers in Gauteng have the easiest time accessing a pharmacy, but in Kwa-Zulu Natal, pedestrians have better access.  This means that in Gauteng, if you can walk to a pharmacy, you can also likely drive there. But you cannot say the same thing for Kwa-Zulu Natal, at least not to the same extent as Gauteng. This suggests that KwaZulu Natal may not have as much reliable road infastructure, or areas within their suburbs have private neighborhoods with private road networks that are not captured by OSM. For both provinces, their maximum walk score are extreme outliers. This suggests that pedestrian access is hyper-concentrated and drops off very quickly as one travels away from that area. Additionally, we see that the average distance from the nearest pharmacy in KwaZulu Natal is ~16km. This is 6 kilometers farther than what is considered reasonable travel distance for healthcare services (10km), suggesting remoteness is limiting their access here. 
 
+#### Zero-Inflation and the Dual-Metric Diagnostic
+
+The 2SFCA zero-inflation (53–74% of SALs scoring exactly zero on walking) is the single most important analytical caveat. The k-nearest distance metric serves as the diagnostic check: when a zero-$A_{i}$ SAL has a short absolute distance to the nearest pharmacy (under 3 km), the zero is likely a snap artifact or catchment boundary edge effect, not a genuine pharmacy desert. When a zero-$A_{i}$ SAL has a long absolute distance (over 10 km), it is a genuine pharmacy desert. The gap between the $A_{i}$ desert rate and the distance exceedance rate quantifies the artifact fraction. This dual-metric approach — combining 2SFCA with distance — is a genuine analytical strength of the pipeline, as each metric serves as a diagnostic check on the other's failure modes.
+
+The snap distance cross-tabulation with access typology reveals that 36.3% of drive-network "Pharmacy desert" SALs are snap-flagged (>500m snap distance), compared to 1.1% of "Well-served" SALs. This concentration means some pharmacy desert classifications may partially reflect OSM road data gaps rather than genuine pharmacy absence. However, areas with poor OSM coverage are also areas with poor road infrastructure, so the two effects reinforce rather than contradict each other.
+
+#### The Redundancy Dimension (k=1 vs. k=3)
+
+The gap between k=1 and k=3 exceedance rates reveals access fragility. A SAL that passes the 3 km walk threshold at k=1 (has one pharmacy within 3 km) but fails at k=3 (does not have three pharmacies within 3 km) depends on a single facility. If that pharmacy closes, stocks out, or is overcrowded, the community loses access entirely. In Gauteng, the k=1 to k=3 gap at 3 km walk is 22.6 percentage points (16.5% to 39.1%), indicating widespread fragile access even in the more urbanized province.
+
+#### Settlement Type and Economic Breakdown
+
+At the 3 km walk threshold (k=1), the intersection of settlement type, economic status, and distance produces the strongest equity signal:
+
+| Category | % SALs Exceeding 3 km Walk |
+|---|---|
+| Non_Wealthy KZN SALs | 74.9% |
+| Wealthy KZN SALs | 39.6% |
+| Non_Wealthy Gauteng SALs | 29.8% |
+| Wealthy Gauteng SALs | 17.6% |
+
+The Non_Wealthy/Traditional KZN combination is the most underserved, connecting directly to apartheid-era spatial planning, which concentrated Black African populations in peripheral homeland areas (now Traditional settlement SALs) deliberately distant from commercial infrastructure.
+
 ### Correlations with Apartheid Geography
 These two charts demonstrate the imbalance of access between neighborhood types and primary race. The suburbs maintain over 70% of all share of access, yet they only have 30% of the total population living there (7-8 million). Townships sit at ~8% of total access share, yet they are home to the most amount of people and the densest (~10 million). Spatial positioning is extremely important to ones level of access to pharmacies in South Africa. 
 
@@ -1118,13 +1371,13 @@ Here, the imbalance diminishes slightly between racial majority. Still, areas th
 
 ------------------------------------------------------------------------
 
-## Datasheets for Datasets \[TESS\]
+## Datasheets for Datasets
 
 *\[To be filled\]*
 
 ------------------------------------------------------------------------
 
-## User Interface and User Experience \[ALEX\]
+## User Interface and User Experience
 
 ### Design Philosophy
 
@@ -1339,9 +1592,91 @@ Appends public hospital records from government sources:
 
 -   Coordinate creation from X/Y fields using `ST_MAKEPOINT()`
 
-### Python Scripts \[JILL, JOEY, TESS\]
+### Python Scripts
 
-#### Pharmacy Geocoding and source enhancement
+#### Spatial Analysis Pipeline \[TESS\]
+
+The spatial analysis pipeline is implemented across eight notebooks that execute
+in strict sequential order. Each notebook reads one or more upstream outputs and
+produces files consumed by downstream notebooks. No notebook can be run out of
+order without data dependency failures.
+
+**`sal_w_ward_deduplication.ipynb`**
+
+Resolves duplicate EA_CODE records introduced by the ArcGIS Pro spatial join
+(`sal_w_ward`), which assigned SAL polygons to 2020 ward boundaries. The
+spatial join produced multiple rows per SAL where join artifacts created
+identical copies. Of 39,177 input features, 797 excess rows are identified and
+removed via five diagnostic checks confirming all duplicates carry identical
+ward assignment, area, geometry, and attribute values. Output:
+`sal_w_ward_dedup.shp` (38,380 rows, EPSG:32735).
+
+**`tess_newpred_clean.ipynb`**
+
+Estimates 2023 SAL-level population by distributing ward-level 2022 Census
+population to SALs using each SAL's proportional share of its parent ward's 2011
+population. The `dasym_weight` is set equal to `share2011` without log-density
+re-weighting, because both `share2011` and `log_density` derive from
+`sal2011_pop`, and combining them would double-count the 2011 population signal.
+Ward share sums are validated to equal exactly 1.000000 for every ward
+(pycnophylactic constraint). Total estimated 2023 population across both
+provinces: 27,523,308, exactly matching the sum of ward-level 2022 Census
+totals. Output: `pop_pred_final.csv` (38,380 rows).
+
+**`osmnx_network_download.ipynb`**
+
+Downloads pedestrian and drive road network graphs for each province from
+OpenStreetMap via OSMnx and computes Euclidean distances from SAL centroids to
+the nearest pharmacy as a baseline. Four graphs are cached as `.graphml` files:
+Gauteng walk (443,832 nodes), Gauteng drive (279,004 nodes), KZN walk (541,204
+nodes), KZN drive (311,426 nodes). Download times range from 26 to 88 minutes
+per graph.
+
+**`tess_2sfca_clean.ipynb`**
+
+Computes a pharmacy accessibility score for every SAL using the Enhanced
+Two-Step Floating Catchment Area (E2SFCA) method with network-based routing and
+negative exponential distance decay (β = 0.0003). Province-specific catchment
+distances: Gauteng walk 2 km / drive 5 km; KZN walk 3 km / drive 10 km.
+Includes two bug fixes: node collision aggregation and MIN_WEIGHTED_POP = 50
+floor to prevent outlier Rj values. Output: `tess_all_access.csv` (38,380 rows).
+
+**`snap_distance_append.ipynb`**
+
+Quantifies the centroid-to-network-node snapping gap for each SAL across all
+four province-mode combinations. This serves as a data quality diagnostic:
+SALs with large snap distances (>500m) have displaced Dijkstra origins that
+introduce systematic measurement error. Appends `walk_snap_dist_m` and
+`drive_snap_dist_m` columns. Output: `tess_all_access_w_snap.csv` (38,380 rows).
+
+**`sal_pharmacy_distance_k3.ipynb`**
+
+Computes the distance from each SAL centroid to the 3 nearest pharmacies using
+Euclidean, pedestrian network, and drive network methods. Uses single-source
+Dijkstra from each pharmacy node with a 50 km cutoff. Checkpoint-resumable with
+intermediate results saved every 50 pharmacies. Includes circuity ratio
+(network/Euclidean) as a diagnostic. Outputs: `sal_pharmacy_distances_k3.csv`
+and backward-compatible `sal_pharmacy_distances.csv` (38,380 rows each).
+
+**`network_threshold.ipynb`**
+
+Applies binary policy thresholds to k-nearest distances across walk (1, 2, 3, 5
+km), drive (5, 10, 15, 20 km), and Euclidean (1, 3, 5, 10 km) for k=1 through
+k=3. Exceedance rates are computed as both SAL-count proportions and
+population-weighted proportions. Cross-tabulations by province, settlement type,
+and economic status. Outputs: `sal_threshold_flags_k3.csv` (38,380 rows, 51
+columns) and `threshold_summary_k3.csv`.
+
+**`combine_access_score_network_threshold.ipynb`**
+
+Merges the three analytical streams (2SFCA scores, k-nearest distances,
+threshold flags) into a single SAL-level dataset with access typology
+classification, snap distance quality flags, and age band aggregations. EA_CODE
+alignment is verified across all source tables (38,380 intersection, 0 orphans).
+Exports as both CSV and shapefile for downstream mapping and app integration.
+Output: `sal_combined_access.csv` and `sal_combined_access_shp/` (38,380 rows).
+
+#### Pharmacy Geocoding and Source Enhancement
 
 The Python geocoding and spatial analysis pipeline is implemented across six
 notebooks that execute sequentially. Each notebook is checkpoint-resumable and
@@ -1497,7 +1832,7 @@ in their listing, so a pharmacy operating under a trade name that contains none
 of the six keywords will not appear. The `business_status` field from the API
 reflects current operational status and may have changed since the date of the
 
-### JavaScript Application \[ALEX\]
+### JavaScript Application
 
 This application examines disparities in pharmacy access shaped by South Africa's apartheid-era spatial geography. It combines a scroll-driven narrative (Story page) with an interactive map dashboard (Map page) to communicate access gaps across different settlement types primarily in Gauteng and KwaZulu-Natal provinces.
 
@@ -1606,9 +1941,122 @@ Source code: [github.com/astauf03/dair-pharmacy-app](https://github.com/astauf03
 
 ------------------------------------------------------------------------
 
+## Output Dataset Documentation
+
+The final analytical output is `sal_combined_access.csv` (38,380 rows), which
+merges all three analytical streams into a single SAL-level record. The
+corresponding shapefile (`sal_combined_access_shp/`) contains the same data
+with SAL polygon geometry for GIS visualization (column names truncated to 10
+characters due to DBF format). Key column groups are documented below.
+
+**Identifiers and geography:**
+
+| Column | Type | Description |
+|---|---|---|
+| `EA_CODE` | Int64 | SAL identifier (8-digit Stats SA code) |
+| `PR_NAME` | str | Province name |
+| `WardID` | str | Ward identifier (8-digit Stats SA code) |
+| `MN_NAME` | str | Municipality name |
+| `DC_NAME` | str | District council name |
+
+**Population:**
+
+| Column | Type | Description |
+|---|---|---|
+| `sal2023_est` | float | Modeled 2023 SAL population |
+| `pop_total_2011` | int | 2011 Census total population (sum of racial group columns) |
+| `pct_black_african` | float | Percent Black African (from 2011 Census) |
+| `pop_0_14` through `pop_65plus` | int | Age band populations (2011 Census) |
+
+**Settlement and economic classification:**
+
+| Column | Type | Description |
+|---|---|---|
+| `EA_GTYPE` | str | Geographic type (Urban, Traditional, Farms) |
+| `EA_TYPE` | str | Settlement type (e.g., Township, Formal residential, Traditional residential) |
+| `econ_status` | str | Economic classification (Wealthy, Non_Wealthy, Non_Residential) |
+| `area_km2` | float | SAL area in square kilometers |
+
+**2SFCA accessibility scores:**
+
+| Column | Type | Description |
+|---|---|---|
+| `Ai_walk` | float | Walking E2SFCA accessibility score |
+| `Ai_drive` | float | Driving E2SFCA accessibility score |
+
+**K-nearest pharmacy distances:**
+
+| Column | Type | Description |
+|---|---|---|
+| `euclidean_dist_k{1,2,3}_km` | float | Euclidean distance to k-th nearest pharmacy (km) |
+| `walk_dist_k{1,2,3}_km` | float | Walk network distance to k-th nearest pharmacy (km) |
+| `drive_dist_k{1,2,3}_km` | float | Drive network distance to k-th nearest pharmacy (km) |
+| `walk_circuity_k1` | float | Walk network / Euclidean distance ratio (k=1) |
+| `drive_circuity_k1` | float | Drive network / Euclidean distance ratio (k=1) |
+
+**Snap distance (data quality):**
+
+| Column | Type | Description |
+|---|---|---|
+| `walk_snap_dist_m` | float | Euclidean distance from centroid to nearest walk-network node (meters) |
+| `drive_snap_dist_m` | float | Euclidean distance from centroid to nearest drive-network node (meters) |
+| `walk_snap_flagged` | bool | True if walk snap distance exceeds 500m |
+| `drive_snap_flagged` | bool | True if drive snap distance exceeds 500m |
+
+**Threshold exceedance flags:**
+
+| Column pattern | Type | Description |
+|---|---|---|
+| `exceeds_{mode}_k{k}_{t}km` | bool | True if k-th nearest pharmacy exceeds t km by the given mode |
+
+**Access typology:**
+
+| Column | Type | Description |
+|---|---|---|
+| `walk_access_type` | str | Walking access typology: Pharmacy desert, Connectivity gap, Demand overcrowding, Access gap, Well-served, Artifact zone |
+| `drive_access_type` | str | Driving access typology (same categories) |
+
+------------------------------------------------------------------------
+
+## Future Improvements
+
+1. **Variable-catchment 2SFCA** by settlement type (EA_GTYPE) rather than province, eliminating the province-boundary discontinuity. Code exists in commented-out form in `tess_2sfca_clean.ipynb`.
+2. **Gaussian decay calibration** with sensitivity analysis across β values to quantify score sensitivity to the decay parameter.
+3. **Building-footprint-weighted centroids** for large SALs (above 75th percentile in area), with sensitivity analysis comparing geometric and weighted centroid results.
+4. **Transit mode integration** via GTFS data for formal BRT/rail and crowdsourced GPS traces for minibus taxis.
+5. **Pharmacy capacity weighting** if staffing or dispensing volume data become available.
+6. **National-scale deployment** eliminating province boundary effects by including all provinces in a single road network graph.
+7. **Temporal sensitivity analysis** comparing 2011 proportional step-down with building-footprint-based dasymetric interpolation to quantify the frozen-distribution assumption's impact.
+8. **Place_id-based deduplication** leveraging the Google Places `place_id` field as a stronger deduplication signal in the Python pipeline.
+
+------------------------------------------------------------------------
+
+## Reproducibility
+
+**Software versions:** Python (environment managed via miniforge/conda), OSMnx 2.1.0, NetworkX 3.6.1, GeoPandas, scipy, tqdm, matplotlib, mapclassify.
+
+**CRS:** EPSG:32735 (UTM zone 35S, meters) for all spatial computations. WGS84 (EPSG:4326) for pharmacy source coordinates and OSMnx queries.
+
+**Hardware:** Notebooks were executed on a local Windows machine. Graph downloads required 26–88 minutes per graph. 2SFCA computation required approximately 2 minutes per province-mode run. k=3 single-source Dijkstra required several hours per graph.
+
+**Data dependencies:** All file paths are centralized in configuration cells at the top of each notebook. Updating paths for a different machine requires editing only the configuration cell. The eight spatial analysis notebooks execute in strict sequential order; no notebook can be run out of order without data dependency failures.
+
+**Network graph statistics:**
+
+| Graph | Nodes | Edges |
+|---|---|---|
+| Gauteng walk | 443,832 | 1,219,312 |
+| Gauteng drive | 279,004 | 730,792 |
+| KZN walk | 541,204 | 1,356,318 |
+| KZN drive | 311,426 | 749,194 |
+
+------------------------------------------------------------------------
+
 ## References
 
-*\[More to be entered\]*   
+Aweeka, Piper. "Addressing Diseases Impacting South Africa." The Borgen Project,
+     8 Aug. 2025, borgenproject.org/diseases-impacting-south-africa-2/.  
+
  Berenbrok L, Tang S, Gabriel N ... Access to community pharmacies: A nationwide
      geographic information systems cross-sectional analysis Journal of the
      American Pharmacists Association, 2022; 62, 1816-1822.e2 
@@ -1640,6 +2088,10 @@ Murphy, Michael, and Jennifer Rodis. "The growing crisis of pharmacy deserts."
 Mutandiro, Kimberly. "A thriving black market for medicines has emerged in
      Joburg." GroundUp, Mar. 2025, groundup.org.za/article/
      a-thriving-black-market-for-medicine-has-emerged-in-joburg/.   
+
+Ramaphosa, Cyril. "Signing of National Health Insurance Bill." Union Buildings,
+     15 May 2025, Tshwane. Speech.  
+
      
 Sefala, R. (2024). *The Legacy of Spatial Apartheid Dataset* (Version
     V3) \[dataset\]. Harvard Dataverse. https://doi.org/10.7910/DVN/JRYYNM
