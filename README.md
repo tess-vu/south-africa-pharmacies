@@ -305,33 +305,20 @@ the other hand, lack coordinates, but have detailed address information.
 
 | Dataset | Source | Date | Records |
 |---|---|---|---|
-| SAPC Active Pharmacies — Gauteng | South African Pharmacy Council Registry | February 2026 | 1,961 (TBC) |
-| SAPC Active Pharmacies — KwaZulu-Natal | South African Pharmacy Council Registry | February 2026 | 894 (TBC) |
+| SAPC Active Pharmacies — Gauteng | South African Pharmacy Council Registry | February 2026 | 1,961  |
+| SAPC Active Pharmacies — KwaZulu-Natal | South African Pharmacy Council Registry | February 2026 | 894  |
 
-The South African Pharmacy Council maintains a searchable online registry of all
-registered pharmacies and pharmacists at `interns.pharma.mm3.co.za`. Unlike the
-insurance network lists, which only include pharmacies participating in specific
-provider agreements, the SAPC registry represents the full population of legally
-registered pharmacies in South Africa. This provides an independent source for
-validating and supplementing the insurance-derived list.
 
-Because the registry does not offer bulk export, records were collected
-programmatically using a trie-based web scraper. The scraper submitted POST
-requests to the registry search endpoint for every possible 3-character
-alphabetical prefix within each province, paginating through results and
-expanding prefixes whenever a search returned a capped number of results without
-pagination, a pattern indicating server-side truncation. For each Active
-pharmacy returned in the search results table, the scraper immediately fetched
-the corresponding detail page within the same session to retrieve full address
-data. Inactive and Erased records do not return valid detail pages and were
-retained with table-level data only.
-
-The scrape yielded records containing Y-number (the SAPC unique pharmacy
-identifier), pharmacy name, street address, city, province, telephone, owner
-name, responsible pharmacist, licence number, registration date, and inspection
-history. The full scrape across both provinces required approximately 1–2 hours.
-The process is implemented in `01_sapc_scraper.ipynb` and is resumable from a
-checkpoint if interrupted.
+The South African Pharmacy Council maintains a registry of all registered
+pharmacies at pharmcouncil.co.za. Unlike the insurance network lists, which only
+include pharmacies participating in specific provider agreements, the SAPC
+registry represents the full population of legally registered pharmacies.
+Records were collected programmatically via a trie-based web scraper that
+submitted search queries for every 3-character alphabetical prefix within each
+province and fetched detail pages for Active pharmacies to retrieve full
+address, owner, responsible pharmacist, licence number, and inspection history.
+Inactive and Erased records are retained with table-level data only. The process
+is documented in `01_sapc_scraper.ipynb`.
 
 *SAPC Source Limitations:* The registry reflects registration status at the time
 of query, so pharmacies registered when the insurance network data was collected
@@ -354,7 +341,7 @@ multiple prefix expansions to be captured.
     the provider website where it was already displayed in table format.
 -   **CSV Download:** SAMWUMED provided direct CSV download
     functionality from their website.
--   **Web Scrape:** SAPC records were accessed via a python scrpaer which queried
+-   **Web Scrape:** SAPC records were accessed via a python scraper which queried
     a search function hosted on their website.  
 
 #### Final Transformed Data
@@ -413,72 +400,6 @@ to any confidence tier. A sequential `record_id` field (`PH00001` through
     status (<https://pharmcouncil.co.za/Pharmacies_Overview>)
 -   **Google Places API:** Provides geocoding services and place
     verification for pharmacy locations
-
-### Point-of-Interest Search for Illicit Pharmacy Indicators
-
-The insurance network and SAPC registry sources capture the formal, registered
-pharmaceutical sector. They do not capture unlicensed vendors, traditional
-medicine sellers, or informal dispensaries that may serve as de facto pharmacy
-substitutes for populations without access to registered services. To map this
-informal layer, a systematic point-of-interest search was conducted across both
-provinces using the Google Places Nearby Search API with a set of keywords
-associated with informal and potentially illicit pharmaceutical activity.
-
-**Coverage Strategy**
-
-Full geographic coverage is achieved through a grid-based search rather than
-address-driven queries. A regular grid of search points is generated at
-approximately 8km spacing (0.08 degrees) across the bounding box of each
-province, and points that fall outside the actual province boundary polygon are
-discarded. Each retained grid point is queried with a 5km search radius, and the
-overlapping circles ensure continuous coverage with no gaps. All grid points
-that fall inside the province boundary are queried for each keyword, producing
-complete and systematic spatial coverage independent of address quality.
-
-**Keywords**
-
-Six keywords are searched in sequence across both provinces: `pharmacy`, `muti
-shop`, `chemist`, `health shop`, `traditional medicine`, and `medicine shop`.
-The `pharmacy` keyword recovers formal establishments that may not appear in the
-insurance network lists, while `muti shop`, `traditional medicine`, and
-`medicine shop` target the traditional and informal medicine sector specifically
-identified in the literature as a source of unregulated pharmaceutical products.
-`Chemist` is an alternate common term for pharmacies in southern Africa that
-yields additional coverage of both formal and informal establishments.
-
-**Result Structure**
-
-Pagination is handled automatically: if a search at a given grid point returns a
-`next_page_token`, the subsequent pages are fetched with a mandatory 2-second
-delay (required by the Google API before the token activates). Each result
-captures `place_id`, name, vicinity address, coordinates, rating, user ratings
-total, business status, and Google-assigned place types.
-
-Places that appear under multiple keywords are not duplicated. All results
-across all keywords are accumulated in memory and then grouped by `place_id`,
-with the `keyword` field collapsed to a comma-separated list of all keywords
-under which that place was returned (for example, `chemist, pharmacy`). This
-keyword tag is analytically useful: a place tagged under both `pharmacy` and
-`muti shop` warrants a different interpretation than one tagged under `muti
-shop` alone.
-
-**Output**
-
-`poi_pharmacies_google.csv` — one row per unique `place_id` across both
-provinces and all keywords, with a combined keyword field. Province is assigned
-based on which province's grid generated the first match for that `place_id`.
-
-*POI Search Limitations:* The Nearby Search API returns at most 60 results per
-grid point (3 pages of 20), so densely packed areas may have establishments
-beyond that cap that are not captured. The 8km grid spacing with a 5km radius
-provides overlapping coverage that partially mitigates this, as the same
-establishment may be captured from an adjacent grid point, but in extremely
-dense commercial areas some establishments may still be missed. Keyword matching
-relies on how businesses have self-described or been described by Google users
-in their listing, so a pharmacy operating under a trade name that contains none
-of the six keywords will not appear. The `business_status` field from the API
-reflects current operational status and may have changed since the date of the
-pull.
 
 ### Data Processing Pipeline
 
@@ -1054,10 +975,6 @@ genuine access deserts requiring policy attention.
 
 **Validation Limitations:**
 
--   **SAPC Database Access:** The SAPC registration database requires
-    manual searches, so bulk automated validation is not supported,
-    limiting the number of records that can be verified and creating
-    potential for human error in lookup processes.
 -   **Registration Currency:** SAPC registration status reflects the
     time of query and pharmacies may have been registered when data was
     collected but subsequently deregistered, or vice versa.
@@ -1538,6 +1455,74 @@ Pagination is handled automatically via `next_page_token`. Results across all
 keywords are accumulated in memory and grouped by `place_id` at the end of the
 run, collapsing the keyword field to a comma-separated list for places appearing
 under multiple search terms. Output: `poi_pharmacies_google.csv`.
+
+#### Point-of-Interest Search for Illicit Pharmacy Indicators
+
+The insurance network and SAPC registry sources capture the formal, registered
+pharmaceutical sector. They do not capture unlicensed vendors, traditional
+medicine sellers, or informal dispensaries that may serve as de facto pharmacy
+substitutes for populations without access to registered services. To map this
+informal layer, a systematic point-of-interest search was conducted across both
+provinces using the Google Places Nearby Search API with a set of keywords
+associated with informal and potentially illicit pharmaceutical activity. NOTE:
+The illicit pharmacy layer was not included in the access analysis or website
+map layers. This was due to inability to confirm current registered pharmacies
+beyond shadow of a doubt. This methodology is for reference in future studies.
+
+**Coverage Strategy**
+
+Full geographic coverage is achieved through a grid-based search rather than
+address-driven queries. A regular grid of search points is generated at
+approximately 8km spacing (0.08 degrees) across the bounding box of each
+province, and points that fall outside the actual province boundary polygon are
+discarded. Each retained grid point is queried with a 5km search radius, and the
+overlapping circles ensure continuous coverage with no gaps. All grid points
+that fall inside the province boundary are queried for each keyword, producing
+complete and systematic spatial coverage independent of address quality.
+
+**Keywords**
+
+Six keywords are searched in sequence across both provinces: `pharmacy`, `muti
+shop`, `chemist`, `health shop`, `traditional medicine`, and `medicine shop`.
+The `pharmacy` keyword recovers formal establishments that may not appear in the
+insurance network lists, while `muti shop`, `traditional medicine`, and
+`medicine shop` target the traditional and informal medicine sector specifically
+identified in the literature as a source of unregulated pharmaceutical products.
+`Chemist` is an alternate common term for pharmacies in southern Africa that
+yields additional coverage of both formal and informal establishments.
+
+**Result Structure**
+
+Pagination is handled automatically: if a search at a given grid point returns a
+`next_page_token`, the subsequent pages are fetched with a mandatory 2-second
+delay (required by the Google API before the token activates). Each result
+captures `place_id`, name, vicinity address, coordinates, rating, user ratings
+total, business status, and Google-assigned place types.
+
+Places that appear under multiple keywords are not duplicated. All results
+across all keywords are accumulated in memory and then grouped by `place_id`,
+with the `keyword` field collapsed to a comma-separated list of all keywords
+under which that place was returned (for example, `chemist, pharmacy`). This
+keyword tag is analytically useful: a place tagged under both `pharmacy` and
+`muti shop` warrants a different interpretation than one tagged under `muti
+shop` alone.
+
+**Output**
+
+`poi_pharmacies_google.csv` — one row per unique `place_id` across both
+provinces and all keywords, with a combined keyword field. Province is assigned
+based on which province's grid generated the first match for that `place_id`.
+
+*POI Search Limitations:* The Nearby Search API returns at most 60 results per
+grid point (3 pages of 20), so densely packed areas may have establishments
+beyond that cap that are not captured. The 8km grid spacing with a 5km radius
+provides overlapping coverage that partially mitigates this, as the same
+establishment may be captured from an adjacent grid point, but in extremely
+dense commercial areas some establishments may still be missed. Keyword matching
+relies on how businesses have self-described or been described by Google users
+in their listing, so a pharmacy operating under a trade name that contains none
+of the six keywords will not appear. The `business_status` field from the API
+reflects current operational status and may have changed since the date of the
 
 ### JavaScript Application \[ALEX\]
 
