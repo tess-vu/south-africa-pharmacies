@@ -983,18 +983,27 @@ The three analytical streams (2SFCA scores, k-nearest distances, threshold
 flags) are merged into a single SAL-level dataset. EA_CODE alignment is
 verified across all source tables (38,380 intersection, 0 orphans).
 
-**Access typology suggestion:** A 2×2 classification combining $A_{i}$ score tier with
-distance threshold:
+**Access typology suggestion:** A six-category classification combining k=1
+distance, k=3 redundancy, Ai score, and snap flag to produce a single
+policy-legible label per SAL:
 
-| | Distance < Threshold | Distance ≥ Threshold |
-|---|---|---|
-| **$A_{i}$ = 0** | *Connectivity Gap* is where a pharmacy exists nearby but is noted road-network unreachable either from OSM completeness issue or catchment boundary edge case. | *Pharmacy Desert* is where no pharmacy is reachable on the network and nearest is also far in absolute terms, and potentially a primary NHI infrastructure target. |
-| **$A_{i}$ Low (Bottom Tercile, Nonzero)** | *Demand Overcrowding* is where a pharmacy is nearby but supply-to-demand ratio is poor, making it a potential candidate for NHI capacity investment at the existing site. | *Access Gap* means it is far from pharmacy and that the pharmacy is also under-supplied. Secondary infrastructure target. |
-| **$A_{i}$ High (Top Tercile)** | *Well-Served* is where a pharmacy is nearby and supply-to-demand ratio is favorable. | *Artifact Zone* is where high $A_{i}$ is mechanically driven by low local demand (industrial, sparse rural). Distance may be the primary indicator. |
+| Category | k=1 distance | k=3 / options | Ai score | Snap flag | Meaning |
+|---|---|---|---|---|---|
+| Well-served | < 3 km | Gap < 5 km | Above median (nonzero) | No | Pharmacy nearby, alternatives exist, not overwhelmed |
+| Overcrowded | < 3 km | Gap < 5 km | Bottom tercile (nonzero) or zero despite proximity | No | Pharmacy nearby with options, but demand outstrips supply |
+| Fragile | < 3 km | Gap ≥ 5 km or k=3 NaN | Any | No | One pharmacy nearby but no meaningful alternatives |
+| Underserved | 3–10 km | Any | Any | No | Requires transport to reach any pharmacy |
+| Pharmacy desert | ≥ 10 km or NaN | Any | Any | No | Effectively no access |
+| Data-uncertain | Any | Any | Any | Yes | High measurement uncertainty due to OSM gaps |
 
-Tercile boundaries are computed from nonzero $A_{i}$ values within each
-province-mode combination, preventing zero-inflation from distorting the
-classification. The typology is computed for both walk and drive modes.
+The classification is evaluated top-to-bottom: the snap flag check for
+Data-uncertain is applied first to separate measurement artifacts from
+genuine access conditions. Among the remaining SALs, the k=1 distance
+determines the primary tier (nearby, reachable, or absent), then k=3
+redundancy and Ai score refine the diagnosis within the "nearby" tier.
+Tercile and median boundaries are computed from nonzero Ai values within
+each province-mode combination to prevent zero-inflation from distorting
+the classification. The typology is computed for both walk and drive modes.
 
 #### Accessibility Calculation Limitations
 
