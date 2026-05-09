@@ -211,16 +211,61 @@ decade-old data.
 
 ### Spatial Accessibility in Healthcare Research
 
-Clinicials and researchers have been measuring healthcare access for decades. Typically, researchers find that rural, low-income areas are the most vulnerable to being under-served in access to healthcare. This is because remoteness is working against them. Most research indicates a 20-30 minute commute for healthcare is considered reasonable, which is hard to acheive in rural areas. In countries where the cost of healthcare is increasing, this gap of access continues to increase, and is exaserbated by spatial context (Murphy and Rodis 2025). Healthcare accessibility is oftem simplified to 'living near health services', but this is been proven over time to be insufficient, especially when using Euclidean distance. Variables like supply and infastructure are overlooked in this method (McClaren et al. 2014). Overtime, researchers have developed a method called Enhanced Two-Step Floating Catchment Area method. This is a gravity-based model that measures acces through time-traveled, supply capacity, and the role of demand. This will be explored in the methodology. Accessibility to pharmacies is crucial for public health: it promotes medication adhernece, increases health education/awareness, and normalizes vaccination and testing behaviors (L Berenbrok 2022). 
+Clinicials and researchers have been measuring healthcare access for decades.
+Typically, researchers find that rural, low-income areas are the most vulnerable
+to being under-served in access to healthcare. This is because remoteness is
+working against them. Most research indicates a 20-30 minute commute for
+healthcare is considered reasonable, which is hard to acheive in rural areas. In
+countries where the cost of healthcare is increasing, this gap of access
+continues to increase, and is exaserbated by spatial context (Murphy and Rodis
+2025). Healthcare accessibility is oftem simplified to 'living near health
+services', but this is been proven over time to be insufficient, especially when
+using Euclidean distance. Variables like supply and infastructure are overlooked
+in this method (McClaren et al. 2014). Overtime, researchers have developed a
+method called Enhanced Two-Step Floating Catchment Area method. This is a
+gravity-based model that measures acces through time-traveled, supply capacity,
+and the role of demand. This will be explored in the methodology. Accessibility
+to pharmacies is crucial for public health: it promotes medication adhernece,
+increases health education/awareness, and normalizes vaccination and testing
+behaviors (L Berenbrok 2022). 
 
 
 ### South African Spatial Research Context
 
-Apartheid is rightfully at the center of spatial research in South Africa and the motiviation behind this research. Although near 40 years in the past, inequalities still persist on many fronts (Lowal 2025). With the work of DAIR, they seek to understand how apartheid has evolved over time into the mainstream culture and society of South Africa today. Because of the manufactured nature of apartheid, South Africa requires different classifications than just urban/subruban/rural that are often found around the world in some iteration. These concepts are present in SA, but are broken down into a more fine-grained subdivision based on their historical context that is not found anywhere else. Neighborhood types such as townships and informal residential have been introduced to this research using thousands of high resolution satellite imagery and integrated into detailed datasets by DAIR. They also collected spatial data on economic class (wealthy/non-wealthy), land use (industrial/commercial/residential), and building density. DAIR plans to continue this research to understand the standard of living and demographic make-up of South Africa as time goes forward (R Sefala 2024). 
+Apartheid is rightfully at the center of spatial research in South Africa and
+the motiviation behind this research. Although near 40 years in the past,
+inequalities still persist on many fronts (Lowal 2025). With the work of DAIR,
+they seek to understand how apartheid has evolved over time into the mainstream
+culture and society of South Africa today. Because of the manufactured nature of
+apartheid, South Africa requires different classifications than just
+urban/subruban/rural that are often found around the world in some iteration.
+These concepts are present in SA, but are broken down into a more fine-grained
+subdivision based on their historical context that is not found anywhere else.
+Neighborhood types such as townships and informal residential have been
+introduced to this research using thousands of high resolution satellite imagery
+and integrated into detailed datasets by DAIR. They also collected spatial data
+on economic class (wealthy/non-wealthy), land use
+(industrial/commercial/residential), and building density. DAIR plans to
+continue this research to understand the standard of living and demographic
+make-up of South Africa as time goes forward (R Sefala 2024). 
 
 ### Pharmacy Regulation and Trade in South Africa
 
-Pharmacies are regulated by the South African Pharmacy Council (SAPC), constituted of a 25-member collective of pharmaceutical professionals. SAPC is an independent, self-funded, statutory body mandated in terms of the Pharmacy Act, 53 of 1974 to regulate the pharmacy profession in the country with powers to register pharmacy professionals and pharmacies, control of pharmaceutical education, and ensuring good pharmacy practice. They maintain multiple committiees and allow you to search pharmacies or pharmacists that are recognized and approved by their regulations, including histories of inspections (pharmcouncil.co.za). Due to the gaps in the regulated pharmaceutical market, an illicit drug trade has emerged. Those who cannot access or are denied access to regulated medicine turn to illegal vendors and street markets to access things like antibiotics, contraceptives, and pain relievers. The consequences of widespread unregulated medicine include increased drug abuse/misuse, increased risk of adverse advents, and decreased rates of dosage adherance (Mutandiro 2025). 
+Pharmacies are regulated by the South African Pharmacy Council (SAPC),
+constituted of a 25-member collective of pharmaceutical professionals. SAPC is
+an independent, self-funded, statutory body mandated in terms of the Pharmacy
+Act, 53 of 1974 to regulate the pharmacy profession in the country with powers
+to register pharmacy professionals and pharmacies, control of pharmaceutical
+education, and ensuring good pharmacy practice. They maintain multiple
+committiees and allow you to search pharmacies or pharmacists that are
+recognized and approved by their regulations, including histories of inspections
+(pharmcouncil.co.za). Due to the gaps in the regulated pharmaceutical market, an
+illicit drug trade has emerged. Those who cannot access or are denied access to
+regulated medicine turn to illegal vendors and street markets to access things
+like antibiotics, contraceptives, and pain relievers. The consequences of
+widespread unregulated medicine include increased drug abuse/misuse, increased
+risk of adverse advents, and decreased rates of dosage adherance (Mutandiro
+2025). 
 
 ------------------------------------------------------------------------
 
@@ -2028,6 +2073,7 @@ characters due to DBF format). Key column groups are documented below.
 6. **National-scale deployment** eliminating province boundary effects by including all provinces in a single road network graph.
 7. **Temporal sensitivity analysis** comparing 2011 proportional step-down with building-footprint-based dasymetric interpolation to quantify the frozen-distribution assumption's impact.
 8. **Place_id-based deduplication** leveraging the Google Places `place_id` field as a stronger deduplication signal in the Python pipeline.
+9. **Illicit Pharmacy Density Analysis** leverage Places POI search to compile list of all medication distribution locations and compare with official registered pharmacies list
 
 ------------------------------------------------------------------------
 
