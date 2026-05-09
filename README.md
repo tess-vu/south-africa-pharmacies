@@ -899,7 +899,7 @@ to produce meaningful distance discrimination within the catchment range.
 An earlier version used β = 0.0001, which produced almost no decay (37%
 weight at 10 km) and was replaced.
 
-**Step 1: Supply ratio (Rj).** For each pharmacy, single-source Dijkstra
+**Step 1: Supply ratio ($R_{j}$).** For each pharmacy, single-source Dijkstra
 traversal outward on the road network up to the catchment cutoff
 identifies all reachable SAL centroids. The decay-weighted population of
 reachable centroids is summed, and the supply ratio is computed as:
@@ -911,11 +911,11 @@ Rj = 1000 / max(weighted_pop, MIN_WEIGHTED_POP)
 where `MIN_WEIGHTED_POP = 50` prevents runaway ratios from pharmacies in
 sparsely populated catchments. The factor of 1000 is a scaling constant
 for readability. Without the population floor, a pharmacy with 3 people
-in its catchment produced Rj = 333, creating scores 5,000x the mean.
+in its catchment produced $R_{j}$ = 333, creating scores 5,000x the mean.
 
 **Step 2: Accessibility score ($A_{i}$).** For each SAL, single-source
 Dijkstra traversal outward on the road network sums the decay-weighted
-Rj values from all reachable pharmacies:
+$R_{j}$ values from all reachable pharmacies:
 
 ```
 Ai = Σ (Rj × f(d_ij))
@@ -938,7 +938,7 @@ producing four province-mode combinations.
 `.set_index("node")` to build the population lookup, silently dropping
 populations when multiple SALs snapped to the same road network node; the
 fix uses `.groupby("node").sum()` to aggregate all populations at shared
-nodes. (2) The MIN_WEIGHTED_POP = 50 floor was added to cap maximum Rj
+nodes. (2) The MIN_WEIGHTED_POP = 50 floor was added to cap maximum $R_{j}$
 at 20, preventing extreme outlier scores.
 
 #### Snap Distance Analysis
@@ -1678,7 +1678,7 @@ Two-Step Floating Catchment Area (E2SFCA) method with network-based routing and
 negative exponential distance decay (β = 0.0003). Province-specific catchment
 distances: Gauteng walk 2 km / drive 5 km; KZN walk 3 km / drive 10 km.
 Includes two bug fixes: node collision aggregation and MIN_WEIGHTED_POP = 50
-floor to prevent outlier Rj values. Output: `tess_all_access.csv` (38,380 rows).
+floor to prevent outlier $R_{j}$ values. Output: `tess_all_access.csv` (38,380 rows).
 
 **`snap_distance_append.ipynb`**
 
