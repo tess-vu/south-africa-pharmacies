@@ -839,56 +839,6 @@ purely distance-based measures.
     experiencing different accessibility than the centroid-based measure
     suggests.
 
-### Environmental Context Variables
-
-To contextualize pharmacy accessibility within broader environmental and
-built environment characteristics, the project incorporates datasets
-measuring greenness and urban development intensity.
-
-**Greenness from DAIR:**
-
-*\[To be filled\]*
-
-**Built Environment from Google Open Buildings:**
-
-Building footprint density and coverage are derived from Google's Open
-Buildings dataset, which provides machine-learning-detected building
-polygons across Africa derived from high-resolution satellite imagery.
-This dataset offers more accurate built environment characterization
-than spectral indices (e.g. NDBI), particularly in heterogeneous urban
-environments common in South African cities.
-
-Building metrics calculated per ward/SAL include:
-
--   Building count
-
--   Total building footprint area
-
--   Building density (buildings per hectare)
-
--   Percent land area covered by buildings
-
-These environmental variables enable analysis of relationships between
-pharmacy accessibility, vegetation coverage, and urban development
-intensity, with potential connections to historical apartheid geography
-where township areas may display distinct environmental signatures.
-
-**Environmental Variable Limitations:**
-
--   **Greenery Seasonality:** *\[To be filled\]*
--   **Building Detection Accuracy:** Google Open Buildings detection
-    performance varies by structure type, so informal housing, buildings
-    with unusual roofing materials, and structures under tree canopy may
-    be underdetected. As a result, detection confidence scores should
-    inform uncertainty quantification.
--   **Building Dataset Currency:** The Open Buildings dataset represents
-    a snapshot at time of imagery acquisition, so rapid development or
-    demolition since acquisition creates a temporal mismatch with
-    current conditions.
--   **Zonal Statistics Aggregation:** Summarizing raster values to
-    ward/SAL boundaries obscures within-unit variation, meaning large
-    wards with heterogeneous land cover will show averaged values that
-    may not represent any actual location within the ward.
 
 ### Validation and Quality Assurance
 
@@ -1017,18 +967,37 @@ recommended for priority intervention areas.
 
 ------------------------------------------------------------------------
 
-## Exploratory Data Analysis \[TESS\]
+## Exploratory Data Analysis 
 
 ### Pharmacy Distribution
 
 *\[Section to be populated with analysis results including:\]*
 
--   *Total pharmacy counts by province and type (private/hospital)*
--   *Pharmacy density maps and kernel density estimation*
--   *Spatial clustering analysis (Moran's I, LISA clusters)*
--   *Distribution by insurance network source*
--   *`PRACTICE_NUM` completeness rates by source*
--   *Geocoding success rates and confidence distributions*
+| Province         | Count |
+|:-----------------|------:|
+| Gauteng          | 1,453 |
+| KwaZulu-Natal    |   699 |
+| **Total**        | **2,152** |  
+
+Pharmacy Distribution
+[![Map](notebooks/images/2sfca_province_preview.png)](notebooks/images/2sfca_province_preview.png)  
+
+| Franchise                   | Count |
+|:------------------------|------:|
+| Other Independent       | 1,264 |
+| Clicks                  |   380 |
+| Independent/Unknown     |   156 |
+| Dis-Chem                |   155 |
+| Department of Health  (Public)  |    72 |
+| Shoprite Checkers       |    58 |
+| Netcare                 |    27 |
+| Life Pharmacy           |    15 |
+| Pure Pharmacy           |    13 |
+| Cornerstone Pharmacies  |     5 |
+| Magoveni Health Group   |     4 |
+| Thakeng Group           |     3 |
+| **Total**               | **2,152** |  
+
 
 ### Population Characteristics 
 
