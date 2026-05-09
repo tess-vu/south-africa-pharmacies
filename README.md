@@ -22,7 +22,7 @@ by the South African parliament that intends to expand public healthcare
 services, fixing what is currently an imbalanced system. Right now,
 public and private medicine funding is split 50/50 by the government.
 However, the public health system serves over 80% of the population,
-whereas private pharmacies serve about 20% \[CITE\]. The inefficiency of
+whereas private pharmacies serve about 20% (Mkhize N.I., 2026). The inefficiency of
 this system on the supply and demand of medicines has led to a number of
 social repercussions like lower than average vaccination rates and
 higher than average rates of communicable diseases \[CITE\]. This new
@@ -1690,7 +1690,10 @@ Ulwazi Programme. (n.d.). History of KwaMashu. Ulwazi Sharing Indigenous
      Knowledge. https://www.ulwaziprogramme.org/history-of-kwamashu/
 
  
+ Mkhize N. I. (2026). Critical assessment of health financing indicators and
+    expenditure in South Africa. Health SA = SA Gesondheid, 31, 3142.
+    https://doi.org/10.4102/hsag.v31i0.3142
 
- 
+
 
 https://www.pharmcouncil.co.za/
