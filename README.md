@@ -336,7 +336,7 @@ pharmacies:
 
 | Dataset             | Source                       | Date    | Records |
 |---------------------|------------------------------|---------|---------|
-| Hospital Pharmacies | DAIR Institute (pre-cleaned) | \[TBD\] | 272     |
+| Hospital Pharmacies | DAIR Institute (pre-cleaned) |  2026   | 272     |
 
 Public hospitals contain pharmacies that dispense medications to
 patients, and location data from government sources confirmed by the
@@ -1633,7 +1633,7 @@ Appends public hospital records from government sources:
 
 ### Python Scripts
 
-#### Spatial Analysis Pipeline \[TESS\]
+#### Spatial Analysis Pipeline
 
 The spatial analysis pipeline is implemented across eight notebooks that execute
 in strict sequential order. Each notebook reads one or more upstream outputs and
@@ -2134,7 +2134,7 @@ Ramaphosa, Cyril. "Signing of National Health Insurance Bill." Union Buildings,
 
      
 Sefala, R. (2024). *The Legacy of Spatial Apartheid Dataset* (Version
-    V3) \[dataset\]. Harvard Dataverse. https://doi.org/10.7910/DVN/JRYYNM
+    V3). Harvard Dataverse. https://doi.org/10.7910/DVN/JRYYNM
 
 South African Government. (2011). Sustainable Human Settlements - Breaking new
      ground. South African Government. https://www.gov.za/about-government/
