@@ -37,7 +37,7 @@ This legislation aims to address the profound inequalities in healthcare
 access that persist nearly three decades after the end of apartheid,
 creating a universal healthcare system that theoretically enables all
 South Africans to receive quality healthcare services regardless of
-their socioeconomic status (Ramaphosa 2024).
+their socioeconomic status (Ramaphosa, 2024).
 
 The passage of the NHI Act has prompted critical questions about
 implementation readiness, particularly regarding the spatial
@@ -51,7 +51,7 @@ urbanization, and the enduring legacy of apartheid-era spatial planning.
 
 ### The Legacy of Apartheid Geography
 
-The precursor of this pharmasocial imbalance is the persisent legacy of
+The precursor of this pharmasocial imbalance is the persistent legacy of
 Apartheid in South Africa that was officially stripped of use in the
 1990s. During this relatively short period of time, political power was
 consolidated to the white minority settlers who were motivated by racism
@@ -75,17 +75,17 @@ reserving well-serviced urban areas for white residents. As an intended
 consequence, this spatial engineering created patterns of uneven
 development that persist today as former township areas often lack the
 commercial infrastructure, including pharmacies, that developed in
-historically white areas (need citation).
+historically white areas (Johnson-Castle, 2014).
 
-The spatial mismatch between where people live and where services are
-located represents a fundamental challenge for NHI's smooth
-implementation. Populations in former township areas and informal
-settlements may need to travel considerable distances to access pharmacy
-services that creates barriers which are particularly acute for the
-elderly, disabled, and those without private transportation. The
-informal economy possesses a substantial portion of South Africa's
-workforce, further compounds and complicates access patterns, as workers
-may have limited time flexibility for healthcare visits (need citation).
+The spatial mismatch between where people live and where services are located
+represents a fundamental challenge for NHI's smooth implementation. Populations
+in former township areas and informal settlements may need to travel
+considerable distances to access pharmacy services that creates barriers which
+are particularly acute for the elderly, disabled, and those without private
+transportation. The informal economy possesses a substantial portion of South
+Africa's workforce, further compounds and complicates access patterns, as
+workers may have limited time flexibility for healthcare visits (McLaren,
+Ardington & Leibbrandt, 2014).
 
 ### Research Motivation and Client Context
 
@@ -110,7 +110,7 @@ The historical significance of South African society is what will be
 used to inform the analysis and the features chosen for the final
 product. The problem in its purest form is an inequitable access to
 essential medicines asserted by unorthodox geospatial design and
-privatized healthcare. This project measures and quanitfies
+privatized healthcare. This project measures and quantifies
 accessibility to pharmacies to answer the questions:
 
 1.  What is the spatial distribution of pharmacies in Gauteng and
@@ -163,7 +163,7 @@ KwaZulu-Natal, located on South Africa's eastern coast has approximately
 juxtaposition to Gauteng, this province displays greater geographic
 diversity, encompassing coastal urban areas around Durban (eThekwini),
 extensive rural areas, and former homeland territories that were
-designated as independent states during apartheid (need citation).
+designated as independent states during apartheid (Lawal, 2025).
 
 The city of Durban serves as the provincial economic center and contains
 South Africa's largest port. However, unlike Gauteng's concentrated
