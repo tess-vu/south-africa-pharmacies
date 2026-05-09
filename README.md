@@ -25,7 +25,7 @@ However, the public health system serves over 80% of the population,
 whereas private pharmacies serve about 20% (Mkhize N.I., 2026). The inefficiency of
 this system on the supply and demand of medicines has led to a number of
 social repercussions like lower than average vaccination rates and
-higher than average rates of communicable diseases \[CITE\]. This new
+higher than average rates of communicable diseases (Aweeka 2025). This new
 bill seeks to bridge the gap between private and public disparities by
 making public health insurance acceptable in private pharmacies where
 supply is at a surplus.
@@ -37,7 +37,7 @@ This legislation aims to address the profound inequalities in healthcare
 access that persist nearly three decades after the end of apartheid,
 creating a universal healthcare system that theoretically enables all
 South Africans to receive quality healthcare services regardless of
-their socioeconomic status (need citation).
+their socioeconomic status (Ramaphosa 2024).
 
 The passage of the NHI Act has prompted critical questions about
 implementation readiness, particularly regarding the spatial
@@ -1604,7 +1604,9 @@ Source code: [github.com/astauf03/dair-pharmacy-app](https://github.com/astauf03
 
 ## References
 
-*\[More to be entered\]*   
+Aweeka, Piper. "Addressing Diseases Impacting South Africa." The Borgen Project,
+     8 Aug. 2025, borgenproject.org/diseases-impacting-south-africa-2/.  
+      
  Berenbrok L, Tang S, Gabriel N ... Access to community pharmacies: A nationwide
      geographic information systems cross-sectional analysis Journal of the
      American Pharmacists Association, 2022; 62, 1816-1822.e2 
@@ -1636,6 +1638,10 @@ Murphy, Michael, and Jennifer Rodis. "The growing crisis of pharmacy deserts."
 Mutandiro, Kimberly. "A thriving black market for medicines has emerged in
      Joburg." GroundUp, Mar. 2025, groundup.org.za/article/
      a-thriving-black-market-for-medicine-has-emerged-in-joburg/.   
+
+Ramaphosa, Cyril. "Signing of National Health Insurance Bill." Union Buildings,
+     15 May 2025, Tshwane. Speech.  
+
      
 Sefala, R. (2024). *The Legacy of Spatial Apartheid Dataset* (Version
     V3) \[dataset\]. Harvard Dataverse. https://doi.org/10.7910/DVN/JRYYNM
