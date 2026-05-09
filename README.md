@@ -1416,12 +1416,6 @@ Here, the imbalance diminishes slightly between racial majority. Still, areas th
 
 ------------------------------------------------------------------------
 
-## Datasheets for Datasets
-
-*\[To be filled\]*
-
-------------------------------------------------------------------------
-
 ## User Interface and User Experience
 
 ### Design Philosophy
@@ -1448,7 +1442,7 @@ study area. The interface design prioritizes:
 -   **Spatial Analysis:** ArcGIS Pro for advanced geoprocessing
 -   **Network Analysis:** OSMnx for pedestrian/driving network
     extraction and accessibility calculations
--   **Geocoding:** \[Secondary Source\], Google Geocoder API
+-   **Geocoding:** Google Places API
 
 ### Application Structure
 
