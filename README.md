@@ -2043,7 +2043,7 @@ characters due to DBF format). Key column groups are documented below.
 
 Aweeka, Piper. "Addressing Diseases Impacting South Africa." The Borgen Project,
      8 Aug. 2025, borgenproject.org/diseases-impacting-south-africa-2/.  
-      
+
  Berenbrok L, Tang S, Gabriel N ... Access to community pharmacies: A nationwide
      geographic information systems cross-sectional analysis Journal of the
      American Pharmacists Association, 2022; 62, 1816-1822.e2 
