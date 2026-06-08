@@ -6,7 +6,7 @@
 
 **Tess Vu** | Spring 2026
 
-**Client:** Distributed AI Research Institute (DAIR) — Raesetje Sefala, Nyalleng Moorosi
+**Client:** Distributed AI Research Institute (DAIR)—Raesetje Sefala, Nyalleng Moorosi
 
 **Instructors:** Michael Fichman, Matthew Harris
 
