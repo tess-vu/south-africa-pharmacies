@@ -1,10 +1,11 @@
 # Data
 data/
-notebooks/data/
-notebooks/cache/
-notebooks/.ipynb_checkpoints/
-.ipynb_checkpoints
+.ipynb_checkpoints/
 *.csv
+!data_dictionary.csv
 
 # Local Files
-tess_local/
+archive/
+
+# Python Caches
+__pycache__/
